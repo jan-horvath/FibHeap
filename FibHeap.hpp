@@ -5,7 +5,10 @@
 #ifndef FIBHEAP_FIBHEAP_HPP
 #define FIBHEAP_FIBHEAP_HPP
 
-template <typename Value> //treba pridat druhy parameter sablony
+#include <cstdio>
+#include <functional>
+
+template <typename Value, typename Compare = std::greater<Value>> //default function for compare makes minimal Fibonacci Heap
 class FibHeap {
 public:
 	class Node {
@@ -36,10 +39,16 @@ public:
 	};
 
 	//creates empty Fibonacci Heap
-	FibHeap(); //: m_minimum(nullptr), m_number(0) {}
+	FibHeap(); //: m_top(nullptr), m_number(0) {}
 
-	//Returns minimum value of Fibonacci Heap
-	const Value* minimum() const;
+	//Returns top value of Fibonacci Heap
+	const Value* top() const;
+
+	//returns true if heap is empty
+	bool empty() const;
+
+	//returns size of the heap
+	size_t size() const;
 
 	//inserts new value into Fibonacci Heap
 	//returns handler for this value
@@ -50,27 +59,29 @@ public:
 	//current heap will contain all values
 	void uniteWith(FibHeap& other);
 
-	//extracts minimum value
+	//extracts top value
 	//this value is removed from the heap and new one is selected
 	//this function also calls the consolidate function
-	Value* extract_min();
+	Value* extract_top();
 
 	//deletes value pointed to by handler
 	//handler is supplied by the insert function
 	//returns true if deletion was successful
 	bool delete_value(Handler &handler);
 
-
 	//decreases value of a key, pointed to by handler
 	//may cascade cut the heap
 	bool decrease_key(const Handler &handler);
 
+	//swaps two different Fibonacci Heaps
+	void swap(FibHeap &other);
+
 private:
 	//modifies the heap so that it does not contain two trees with the same degree
-	//ensures the amortized logatimic deletion and extract-min time
+	//ensures the amortized logatimic deletion and extract-top time
 	void consolidate();
 
-	Value* m_minimum;
+	Value* m_top;
 	unsigned m_number;
 };
 
