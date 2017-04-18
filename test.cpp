@@ -10,7 +10,7 @@ TEST_CASE( "Default constructor test" ) {
 	REQUIRE(testHeap.empty());
 	REQUIRE(testHeap.size() == 0);
 }
-
+/*
 TEST_CASE( "Copy constructor test, empty heap" ) {
 	FibHeap<int> emptyHeap;
 	FibHeap<int> copiedHeap(emptyHeap);
@@ -46,14 +46,14 @@ TEST_CASE( "Copy assignment, empty heap" ) {
 
 TEST_CASE( "Move assignment, empty heap" ) {
 	FibHeap<int> emptyHeap;
-	FibHeap<int> movedHeap = emptyHeap;
+	FibHeap<int> movedHeap = emptyHeap; //nie std::move?
 
 	REQUIRE(movedHeap.empty());
 	REQUIRE(movedHeap.size() == 0);
 
 	REQUIRE(movedHeap.empty() == emptyHeap.empty());
 	REQUIRE(movedHeap.size() == emptyHeap.size());
-}
+}*/
 
 TEST_CASE( "Simple insert test" ) {
 	FibHeap<int> testHeap;
@@ -75,7 +75,7 @@ TEST_CASE( "Simple insert test" ) {
 	REQUIRE(testHeap.top() == 10);
 
 }
-
+/*
 TEST_CASE( "Simple range constructor" ) {
 	std::vector<int> emptyVector;
 	std::vector<int> nEmptyVector = {1,3,5,7,9,11,13, -13};
@@ -89,9 +89,10 @@ TEST_CASE( "Simple range constructor" ) {
 	REQUIRE(!nEmptyHeap.empty());
 	REQUIRE(nEmptyHeap.size() == 8);
 	REQUIRE(nEmptyHeap.top() == 13);
-}
+}*/
 
-/*TODO
+/*
+ * TODO
  * copy ctor test Extended
  * move ctor test Extended
  * copy assignment operator test Extended
@@ -104,6 +105,6 @@ TEST_CASE( "Simple range constructor" ) {
  * delete_value test (Basic/Extended)
  * decrease_key test (Basic/Extended)
  * swap test (Basic/Extended)
- * /
+ * */
 
 

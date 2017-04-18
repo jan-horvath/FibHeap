@@ -12,6 +12,8 @@
 template <typename Value, typename Compare = std::less<Value>>
 class FibHeap {
 public:
+	using value_type = Value;
+	using compare = Compare;
 	class Node {
 		Node* m_left;
 		Node* m_right;
@@ -20,9 +22,9 @@ public:
 
 		bool m_mark;
 		unsigned m_degree;
-		Value m_key;
+		value_type m_key;
 
-		Node(const Value &);
+		Node(const value_type &);
 
 		friend class FibHeap;
 	};
@@ -59,11 +61,11 @@ public:
 	FibHeap(It begin, It end);
 
 	//constructs Fibonacci Heap from initializer list
-	FibHeap(std::initializer_list<Value>);
+	FibHeap(std::initializer_list<value_type>);
 
 	//Returns top value of Fibonacci Heap
 	//Can only be called if the heap is not empty
-	const Value& top() const;
+	const value_type& top() const;
 
 	//returns true if heap is empty
 	bool empty() const;
@@ -73,10 +75,10 @@ public:
 
 	//inserts new value into Fibonacci Heap
 	//returns handler for this value
-	Handler insert(const Value&);
+	Handler insert(const value_type&);
 
 	//moves new value into Fibonacci Heap
-	Handler insert(Value &&);
+	Handler insert(value_type &&);
 
 	//unites current heap with another one
 	//the other heap is invalidated
@@ -86,7 +88,7 @@ public:
 	//extracts top value
 	//this value is removed from the heap and new one is selected
 	//this function also calls the consolidate function
-	Value* extract_top();
+	value_type* extract_top();
 
 	//deletes value pointed to by handler
 	//handler is supplied by the insert function
@@ -105,10 +107,10 @@ private:
 	//ensures the amortized logatimic deletion and extract-top time
 	void consolidate();
 
-	Value* m_top;
+	Node* m_top;
 	unsigned m_number;
+	size_t m_size;
 };
-
 
 
 #endif //FIBHEAP_FIBHEAP_HPP
