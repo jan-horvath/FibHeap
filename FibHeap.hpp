@@ -8,7 +8,8 @@
 #include <cstdio>
 #include <functional>
 
-template <typename Value, typename Compare = std::greater<Value>> //default function for compare makes minimal Fibonacci Heap
+//default function for compare makes maximal Fibonacci Heap
+template <typename Value, typename Compare = std::less<Value>>
 class FibHeap {
 public:
 	class Node {
@@ -61,7 +62,8 @@ public:
 	FibHeap(std::initializer_list<Value>);
 
 	//Returns top value of Fibonacci Heap
-	const Value* top() const;
+	//Can only be called if the heap is not empty
+	const Value& top() const;
 
 	//returns true if heap is empty
 	bool empty() const;
@@ -72,6 +74,9 @@ public:
 	//inserts new value into Fibonacci Heap
 	//returns handler for this value
 	Handler insert(const Value&);
+
+	//moves new value into Fibonacci Heap
+	Handler insert(Value &&);
 
 	//unites current heap with another one
 	//the other heap is invalidated
