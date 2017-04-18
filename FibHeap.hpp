@@ -24,7 +24,8 @@ public:
 		unsigned m_degree;
 		value_type m_key;
 
-		Node(const value_type &);
+		Node(const value_type &val) : m_left(nullptr), m_right(nullptr), m_parent(nullptr), m_child(nullptr)
+		, m_mark(false), m_degree(0), m_key(val) {};
 
 		friend class FibHeap;
 	};
@@ -34,15 +35,20 @@ public:
 		bool m_exists;
 
 		Handler() = delete;
-		Handler(Node* node);
 		Handler(const Handler&) = delete;
 		Handler operator=(const Handler&) = delete;
+
+		Handler(Node* node);
+
+	public:
+		Handler(Handler &&);
+		Handler operator=(Handler&&);
 
 		friend class FibHeap;
 	};
 
 	//creates empty Fibonacci Heap
-	FibHeap(); //: m_top(nullptr), m_number(0) {}
+	FibHeap(): m_top(nullptr), m_number(0) {}
 
 	//copy constructs Fibonacci Heap (deep copy)
 	FibHeap(const FibHeap&);
@@ -75,14 +81,15 @@ public:
 
 	//inserts new value into Fibonacci Heap
 	//returns handler for this value
-	Handler insert(const value_type&);
+	Handler&& insert(const value_type&);
 
 	//moves new value into Fibonacci Heap
-	Handler insert(value_type &&);
+	Handler&& insert(value_type &&);
 
 	//unites current heap with another one
 	//the other heap is invalidated
 	//current heap will contain all values
+	//any Handlers created by the other heap have to be valid (for the current heap)
 	void uniteWith(FibHeap&);
 
 	//extracts top value
@@ -97,7 +104,7 @@ public:
 
 	//decreases value of a key, pointed to by handler
 	//may cascade cut the heap
-	bool decrease_key(const Handler &);
+	bool decrease_key(const Handler &, const Value& );
 
 	//swaps two different Fibonacci Heaps
 	void swap(FibHeap &);
