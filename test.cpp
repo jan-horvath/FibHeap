@@ -9,11 +9,12 @@ struct Copyable {
 	Copyable() : value(0) {}
 	Copyable(int v) : value(v) {}
 	Copyable(const Copyable& o) : value(o.value) {}
-	Copyable operator= (const Copyable& o) {
+	Copyable &operator= (const Copyable& o) {
 		value = o.value;
+		return *this;
 	}
 	Copyable(Copyable &&) = delete;
-	Copyable operator=(Copyable &&) = delete;
+	Copyable &operator=(Copyable &&) = delete;
 
 	bool operator> (const Copyable &o) const {
 		return this->value > o.value;
@@ -44,12 +45,13 @@ struct Movable {
 	Movable(Movable&& o) : value(o.value) {
 		o.value = 0;
 	}
-	Movable operator= (Movable&& o) {
+	Movable &operator= (Movable&& o) {
 		value = o.value;
 		o.value = 0;
+		return *this;
 	}
 	Movable(const Movable&) = delete;
-	Movable operator=(const Movable&) = delete;
+	Movable &operator=(const Movable&) = delete;
 
 	bool operator> (const Movable &o) const {
 		return value > o.value;
@@ -466,7 +468,15 @@ TEST_CASE( "Move assignment operator test" ) {
 
 TEST_CASE( "Insert test" ) {
 	SECTION("Copyable") {
-		std::vector<Copyable> copyables{32,32,16,8,4,4,4,2,1};
+		std::vector<Copyable> copyables/*{32,32,16,8,4,4,4,2,1}*/;
+		//copyables.push_back(32);
+		std::vector<int> vector{32};
+
+		for(int i : vector) {
+			Copyable x(i);
+			copyables.push_back(x);
+		}
+
 		FibHeap<Copyable> testHeap;
 
 		for (unsigned i = 0; i < copyables.size(); ++i) {
