@@ -71,6 +71,7 @@ public:
 
 	//Returns top value of Fibonacci Heap
 	//Can only be called if the heap is not empty
+	//May throw exceptions
 	const value_type& top() const;
 
 	//returns true if heap is empty
@@ -100,11 +101,14 @@ public:
 	//deletes value pointed to by handler
 	//handler is supplied by the insert function
 	//returns true if deletion was successful
+	//may throw exceptions
 	bool delete_value(Handler &);
 
-	//decreases value of a key, pointed to by handler
+	//increase value of a key, pointed to by handler
 	//may cascade cut the heap
-	bool decrease_key(const Handler &, const Value& );
+	//here, increase means changing the value so that Compare(current_value, new_value) returns true
+	//may throw exceptions (for non-existing value and for non-satisfying new_value)
+	bool increase_key(const Handler &, const Value& );
 
 	//swaps two different Fibonacci Heaps
 	void swap(FibHeap &);

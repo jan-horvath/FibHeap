@@ -5,8 +5,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 set(SOURCE_FILES
     catch.hpp
-    FibHeap.cpp
-    FibHeap.hpp
+        FibHeap.hpp
     main.cpp
     test.cpp)
 
