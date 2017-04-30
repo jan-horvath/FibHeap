@@ -24,6 +24,8 @@ public:
 		unsigned m_degree;
 		Value m_key;
 
+		Node() : m_left(nullptr), m_right(nullptr), m_parent(nullptr), m_child(nullptr)
+				, m_mark(false), m_degree(0), m_key(0) {};
 		Node(const Value &val) : m_left(nullptr), m_right(nullptr), m_parent(nullptr), m_child(nullptr)
 		, m_mark(false), m_degree(0), m_key(val) {};
 		Node(const Node &n) : m_left(nullptr), m_right(nullptr), m_parent(nullptr), m_child(nullptr)
@@ -94,7 +96,6 @@ public:
 
 	//copy assignment operator
 	FibHeap &operator=(const FibHeap &other) {
-
 		FibHeap tmp(other);
 		swap(tmp);
 		return *this;
@@ -272,18 +273,95 @@ public:
 	//handler is supplied by the insert function
 	//returns true if deletion was successful
 	//may throw exceptions
-	bool delete_value(Handler &);
+	bool delete_value(Handler &h){
+		if(!h.m_exists || !h.m_node)
+			throw std::invalid_argument("Handler does not exist or does not have a pointer to a Node!");		//maybe return false?
+
+		Node *node = h.m_node;
+		Node *parent = node->m_parent;
+
+		if(parent){
+			cutBranch(h.m_node, parent);
+			cascadingCutBranch(parent);
+		}
+		m_top = node;
+
+		extract_top();
+
+		h.m_exists = false;
+
+		return true;
+	}
 
 	//increase value of a key, pointed to by handler
 	//may cascade cut the heap
-	//here, increase means changing the value so that Compare(current_value, new_value) returns true
+	//here, increase means changing the value so that Compare(old_value, new_value) returns true
 	//may throw exceptions (for non-existing value and for non-satisfying new_value)
-	bool increase_key(const Handler &, const Value& );
+	bool increase_key(const Handler &h, const Value &new_value){
+		if(!h.m_exists || !h.m_node)
+			throw std::invalid_argument("Handler does not exist or does not have a pointer to a Node!");		//maybe return false?
+
+		Value *curr_value = &h.m_node->m_key;
+		if(!compare(*curr_value, new_value))
+			throw std::invalid_argument("Wrong new value in increase_key!");	//maybe return false?
+
+		*curr_value = new_value;
+		Node *parent = h.m_node->m_parent;
+
+		if(parent && !compare(*curr_value, parent->m_key)){
+			cutBranch(h.m_node, parent);
+			cascadingCutBranch(parent);
+		}
+
+		if(!compare(h.m_node->m_key, m_top->m_key)){
+			m_top = h.m_node;
+		}
+
+		return true;
+	}
 
 	//swaps two different Fibonacci Heaps
-	void swap(FibHeap &);
+	void swap(FibHeap &heap){
+		std::swap(m_top, heap.m_top);
+		std::swap(m_number, heap.m_number);
+		std::swap(m_size, heap.m_size);
+	}
 
 private:
+	void cutBranch(Node *current, Node *parent){
+		Node *child = parent->m_child;
+		while(child != current){
+			child = child->m_right;
+		}
+		//child == current
+		child->m_right->m_left = child->m_left;
+		child->m_left->m_right = child->m_right;
+
+		parent->m_degree--;
+
+		child->m_left = m_top->m_left;
+		child->m_right = m_top;
+		m_top->m_left->m_right = child;
+		m_top->m_left = child;
+
+		child->m_parent = nullptr;
+		child->m_mark = false;
+	}
+
+	void cascadingCutBranch(Node *node){
+		Node *parent = node->m_parent;
+
+		if(!parent)
+			return;
+
+		while(node->m_mark){
+			cutBranch(node, parent);
+			node = parent;
+			parent = parent->m_parent;
+		}
+		node->m_mark = true;
+	}
+
 	int maxDegree(){
 		using namespace std;
 		return static_cast<int>(ceil(log(static_cast<double>(m_size))/log(static_cast<double>(1 + sqrt(static_cast<double>(5)))/2))) + 1;
@@ -360,7 +438,7 @@ private:
 
 		if(from.m_child){
 			to.m_child = new Node(*from.m_child);
-			*to.m_child->m_parent = to;
+			to.m_child->m_parent = &to;
 
 			copyRec(*from.m_child, *to.m_child, from.m_child, to.m_child);
 		}else{
@@ -369,10 +447,10 @@ private:
 
 		if(from.m_right == initial){
 			to.m_right = copyInitial;
-			*to.m_right->m_left = to;
+			to.m_right->m_left = &to;
 		}else{
 			to.m_right = new Node(*from.m_right);
-			*to.m_right->m_left = to;
+			to.m_right->m_left = &to;
 
 			copyRec(*from.m_right, *to.m_right, initial, copyInitial);
 		}
