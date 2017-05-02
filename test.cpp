@@ -167,7 +167,7 @@ TEST_CASE( "Copy assignment, empty heap" ) {
 
 TEST_CASE( "Move assignment, empty heap" ) {
 	FibHeap<int> emptyHeap;
-	FibHeap<int> movedHeap = emptyHeap; //nie std::move?
+	FibHeap<int> movedHeap = std::move(emptyHeap);
 
 	REQUIRE(movedHeap.empty());
 	REQUIRE(movedHeap.size() == 0);
@@ -269,7 +269,7 @@ TEST_CASE( "Simple heap union test" ) {
 	REQUIRE(testHeap1.size() == 7);
 	REQUIRE(testHeap2.empty());
 }
-/*
+
 TEST_CASE( "Simple delete value test" ) {
 	FibHeap<int> testHeap;
 	testHeap.insert(3);
@@ -304,9 +304,9 @@ TEST_CASE( "Simple swap test" ) {
 	REQUIRE(testHeap1.top() == 25);
 	REQUIRE(testHeap2.top() == 30);
 }
-*/
+
 // #################################################### EXTENDED TESTS ###################################### //
-/*
+
 TEST_CASE( "Copy constructor test" ) {
 	FibHeap<int> testHeap{0,5,10,15,20, 35};
 	auto H25 = testHeap.insert(25);
@@ -472,7 +472,7 @@ TEST_CASE( "Move assignment operator test" ) {
 
 TEST_CASE( "Insert test" ) {
 	SECTION("Copyable") {
-		std::vector<Copyable> copyables/*{32,32,16,8,4,4,4,2,1};
+		std::vector<Copyable> copyables/*{32,32,16,8,4,4,4,2,1}*/;
 		//copyables.push_back(32);
 		std::vector<int> vector{32};
 
@@ -516,7 +516,7 @@ TEST_CASE( "Insert test" ) {
 		REQUIRE(CheckHeap(testHeap, movables));
 	}
 }
-*/
+
 TEST_CASE( "Heap union test" ) {
 	SECTION( "Union - empty heap(s)" ) {
 		FibHeap<int> emptyHeap1;
@@ -563,7 +563,7 @@ TEST_CASE( "Heap union test" ) {
 		}
 	}
 
-	/*SECTION("Handlers check") {
+	SECTION("Handlers check") {
 		FibHeap<int> testHeap1{50,100};
 		auto H75 = testHeap1.insert(75);
 		auto H120 = testHeap1.insert(120);
@@ -596,13 +596,20 @@ TEST_CASE( "Heap union test" ) {
 			std::vector<int> vector{50,100,500,120,89,99,109};
 			REQUIRE(CheckHeap(testHeap2, vector));
 		}
-	}*/
+	}
 }
-/*
+
 TEST_CASE( "Delete value and increase key test" ) {
 	FibHeap<int> testHeap{20,30,40};
 	auto H50 = testHeap.insert(50);
 	auto H10 = testHeap.insert(10);
+
+    for (unsigned i = 6; i < 11; ++i) {
+        testHeap.insert(10*i);
+    }
+    for (unsigned i = 6; i < 11; ++i) {
+        testHeap.extract_top();
+    }
 
 	testHeap.delete_value(H50);
 	REQUIRE(testHeap.top() == 40);
@@ -613,5 +620,5 @@ TEST_CASE( "Delete value and increase key test" ) {
 	REQUIRE_THROWS(testHeap.increase_key(H50, 120));
 	REQUIRE_THROWS(testHeap.increase_key(H10, 0));
 }
-*/
+
 
