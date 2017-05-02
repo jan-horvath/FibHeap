@@ -167,7 +167,7 @@ TEST_CASE( "Copy assignment, empty heap" ) {
 
 TEST_CASE( "Move assignment, empty heap" ) {
 	FibHeap<int> emptyHeap;
-	FibHeap<int> movedHeap = emptyHeap; //nie std::move?
+	FibHeap<int> movedHeap = std::move(emptyHeap);
 
 	REQUIRE(movedHeap.empty());
 	REQUIRE(movedHeap.size() == 0);
@@ -601,6 +601,13 @@ TEST_CASE( "Delete value and increase key test" ) {
 	FibHeap<int> testHeap{20,30,40};
 	auto H50 = testHeap.insert(50);
 	auto H10 = testHeap.insert(10);
+
+    for (unsigned i = 6; i < 11; ++i) {
+        testHeap.insert(10*i);
+    }
+    for (unsigned i = 6; i < 11; ++i) {
+        testHeap.extract_top();
+    }
 
 	testHeap.delete_value(H50);
 	REQUIRE(testHeap.top() == 40);
