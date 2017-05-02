@@ -469,10 +469,10 @@ TEST_CASE( "Move assignment operator test" ) {
 		REQUIRE(movedTo.empty());
 	}
 }
-/*
+
 TEST_CASE( "Insert test" ) {
 	SECTION("Copyable") {
-		std::vector<Copyable> copyables{32,32,16,8,4,4,4,2,1};
+		std::vector<Copyable> copyables/*{32,32,16,8,4,4,4,2,1}*/;
 		//copyables.push_back(32);
 		std::vector<int> vector{32};
 
@@ -509,14 +509,12 @@ TEST_CASE( "Insert test" ) {
 		FibHeap<Movable> testHeap;
 
 		for (unsigned i = 0; i < movables.size(); ++i) {
-			testHeap.insert(movables.at(i));
+			testHeap.insert(std::move(movables.at(i)));
 			REQUIRE(movables.at(i) == 0);
 		}
-
-		REQUIRE(CheckHeap(testHeap, movables));
 	}
 }
-*/
+
 TEST_CASE( "Heap union test" ) {
 	SECTION( "Union - empty heap(s)" ) {
 		FibHeap<int> emptyHeap1;

@@ -28,6 +28,8 @@ public:
 				, m_mark(false), m_degree(0), m_key(0) {};
 		Node(const Value &val) : m_left(nullptr), m_right(nullptr), m_parent(nullptr), m_child(nullptr)
 		, m_mark(false), m_degree(0), m_key(val) {};
+		Node(Value &&val) : m_left(nullptr), m_right(nullptr), m_parent(nullptr), m_child(nullptr)
+				, m_mark(false), m_degree(0), m_key(std::move(val)) {};
 		Node(const Node &n) : m_left(nullptr), m_right(nullptr), m_parent(nullptr), m_child(nullptr)
 				, m_mark(n.m_mark), m_degree(n.m_degree), m_key(n.m_key) {};
 		Node &operator=(const Node &n) {
@@ -146,13 +148,15 @@ public:
 
 	//inserts new value into Fibonacci Heap
 	//returns handler for this value
-	Handler&& insert(const Value &val) {
+	/*Handler insert(const Value &val) {
 		return insert(static_cast<Value&&>(static_cast<Value>(val)));
-	}
+	}*/
 
 	//moves new value into Fibonacci Heap
-	Handler&& insert(Value &&val) {
-		Node *n = new Node(val);
+	template <typename T = Value>
+	Handler insert(T &&val) {
+		Node *n = insert_help(std::forward<T>(val),
+							  std::is_lvalue_reference<T>());
 
 		if(empty()){
 			m_top = n;
@@ -463,6 +467,22 @@ private:
 	bool compare(const Value &a, const Value &b) const {
 		Compare cmp = Compare();
 		return cmp(a,b);
+	}
+
+	template <typename T = Value>
+	Node* insert_help(T&& t, std::false_type) {
+		//std::cout << "RVALUE" << std::endl;
+		//T* X = new T(std::move(t));
+		Node *n = new Node(std::move(t));
+		return n;
+	}
+
+	template <typename T = Value>
+	Node* insert_help(const T& t, std::true_type) {
+		//std::cout << "LVALUE" << std::endl;
+		//T* X = (new T(t));
+		Node *n = new Node(t);
+		return n;
 	}
 
 	Node* m_top;
