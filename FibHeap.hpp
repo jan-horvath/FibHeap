@@ -74,6 +74,10 @@ public:
 			return *this;
 		}
 
+        const Value& value() const {
+            return m_node->m_key;
+        }
+
 		friend class FibHeap;
 	};
 
@@ -243,7 +247,7 @@ public:
 				left->m_right = child;
 			}
 
-			for (int i = 0; i < m_top->m_degree - 1; i++) {
+			for (int i = 0; i < m_top->m_degree-1; i++) {
 				child->m_parent = nullptr;
 				child = child->m_right;
 			}
@@ -350,6 +354,8 @@ private:
 
 		child->m_parent = nullptr;
 		child->m_mark = false;
+
+        m_number++;
 	}
 
 	void cascadingCutBranch(Node *node){
@@ -380,35 +386,37 @@ private:
 		for(int i = 0; i < m_number; i++){
 			unsigned degree = current->m_degree;
 
-			while(trees[degree] != nullptr){
-				Node *other = trees[degree];
+			while((trees[degree] != nullptr) && (trees[degree] != current)) {
+				Node *son = trees[degree];
+                Node *parent = current;
 
-				if(compare(current->m_key, other->m_key)){
-					Node *tmp = other;
-					other = current;
-					current = tmp;
+				if(compare(parent->m_key, son->m_key)){
+                    current = current->m_left;
+					Node *tmp = son;
+                    son = parent;
+                    parent = tmp;
 				}
 				//current is parent
 				//other is son
 
-				other->m_right->m_left = other->m_left;
-				other->m_left->m_right = other->m_right;
+                son->m_right->m_left = son->m_left;
+                son->m_left->m_right = son->m_right;
 
-				if(!current->m_child){
-					current->m_child = other;
-					other->m_right = other;
-					other->m_left = other;
+				if(!parent->m_child){
+                    parent->m_child = son;
+                    son->m_right = son;
+                    son->m_left = son;
 
 				}else{
-					other->m_left = current->m_child->m_left;
-					other->m_right = current->m_child;
-					current->m_child->m_left->m_right = other;
-					current->m_child->m_left = other;
+                    son->m_left = parent->m_child->m_left;
+                    son->m_right = parent->m_child;
+                    parent->m_child->m_left->m_right = son;
+                    parent->m_child->m_left = son;
 
 				}
-				other->m_parent = current;
+                son->m_parent = parent;
 
-				current->m_degree++;
+                parent->m_degree++;
 				trees[degree] = nullptr;
 				degree++;
 			}
@@ -418,7 +426,7 @@ private:
 		}
 
 		m_number = 0;
-		for(Node *n : trees){
+		for(Node *n : trees) {
 			if(n) {
 				if (!m_top || compare(m_top->m_key, n->m_key)) {
 					m_top = n;

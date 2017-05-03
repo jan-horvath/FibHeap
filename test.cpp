@@ -124,7 +124,7 @@ bool CheckHeap(FibHeap<Value>& heap, std::vector<Value>& values) {
 	}
 	return heap.empty();
 }
-
+/*
 TEST_CASE( "Default constructor test" ) {
 	FibHeap<int> testHeap;
 
@@ -472,8 +472,7 @@ TEST_CASE( "Move assignment operator test" ) {
 
 TEST_CASE( "Insert test" ) {
 	SECTION("Copyable") {
-		std::vector<Copyable> copyables/*{32,32,16,8,4,4,4,2,1}*/;
-		//copyables.push_back(32);
+		std::vector<Copyable> copyables;
 		std::vector<int> vector{32};
 
 		for(int i : vector) {
@@ -617,6 +616,34 @@ TEST_CASE( "Delete value and increase key test" ) {
 	REQUIRE(testHeap.top() == 100);
 	REQUIRE_THROWS(testHeap.increase_key(H50, 120));
 	REQUIRE_THROWS(testHeap.increase_key(H10, 0));
+}
+*/
+
+TEST_CASE( "Work with handlers" ) {
+    std::vector<FibHeap<int, std::greater<int>>::Handler> handlers;
+    FibHeap<int, std::greater<int>> fibHeap;
+    const int HEAP_SIZE = 1001;
+
+    for (unsigned i = 1; i <= HEAP_SIZE; ++i) {
+        handlers.push_back(fibHeap.insert(10*i));
+    }
+    REQUIRE(fibHeap.size() == HEAP_SIZE);
+    REQUIRE(fibHeap.top() == 10);
+
+    for (unsigned j = 0; j < 10; ++j) {
+        for (const auto &handler : handlers) {
+            fibHeap.increase_key(handler, handler.value()-1);
+        }
+    }
+
+    REQUIRE(fibHeap.size() == HEAP_SIZE);
+    REQUIRE(fibHeap.top() == 0);
+    for (unsigned i = 0; i < HEAP_SIZE; ++i) {
+        REQUIRE(!fibHeap.empty());
+        REQUIRE(fibHeap.top() == 10*i);
+        fibHeap.extract_top();
+    }
+    REQUIRE(fibHeap.empty());
 }
 
 
