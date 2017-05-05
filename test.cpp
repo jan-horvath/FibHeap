@@ -74,44 +74,55 @@ struct Movable {
 private:
 	int value;
 };
-/*
-struct CopyableMovable {
-	CopyableMovable() : value(0) {}
-	CopyableMovable(int v) : value(v) {}
-	CopyableMovable(CopyableMovable&& o) : value(o.value) {
-		o.value = 0;
-	}
-	CopyableMovable operator= (CopyableMovable&& o) {
-		value = o.value;
-		o.value = 0;
-	}
-	CopyableMovable(const CopyableMovable& o) : value(o.value) {}
-	CopyableMovable operator=(const CopyableMovable& o) {
-		value = o.value;
-	}
 
-	bool operator> (const CopyableMovable &o) const {
-		return this->value > o.value;
-	}
-	bool operator< (const CopyableMovable &o) const {
-		return this->value < o.value;
-	}
-	bool operator>= (const CopyableMovable &o) const {
-		return this->value >= o.value;
-	}
-	bool operator<= (const CopyableMovable &o) const {
-		return this->value <= o.value;
-	}
-	bool operator== (const CopyableMovable &o) const {
-		return value == o.value;
-	}
-	bool operator!= (const CopyableMovable &o) const {
-		return !((*this)==o);
-	}
-private:
-	int value;
+struct X {
+    static std::vector<std::uintptr_t> addresses;
+
+    X() : value(0) {
+        X::addresses.push_back(reinterpret_cast<std::uintptr_t>(this));
+        //std::cout << "X constructed with value " << value << "\n";
+    }
+
+    X(const X& other) : value(other.value) {
+        X::addresses.push_back(reinterpret_cast<std::uintptr_t>(this));
+        //std::cout << "X copy constructed with value " << value << "\n";
+    }
+    X(X&& other) : value(other.value) {
+        X::addresses.push_back(reinterpret_cast<std::uintptr_t>(this));
+        //std::cout << "X move constructed with value " << value << "\n";
+    }
+
+    X&operator=(const X& other) {
+        this->value = other.value;
+        return *this;
+    }
+
+    X(int i) : value(i) {
+        X::addresses.push_back(reinterpret_cast<std::uintptr_t>(this));
+        //std::cout << "X constructed with value " << value << "\n";
+    }
+    ~X() {
+        //std::cout << "X destroyed with value " << value << "\n";
+        REQUIRE(std::find(addresses.begin(), addresses.end(), reinterpret_cast<std::uintptr_t>(this)) != addresses.end());
+        addresses.erase(std::remove(addresses.begin(), addresses.end(), reinterpret_cast<std::uintptr_t>(this)), addresses.end());
+    }
+
+    bool operator<(const X& other) const { return this->value > other.value;}
+    bool operator>(const X& other) const { return this->value < other.value;}
+    bool operator==(const X& other) const { return this->value == other.value;}
+    bool operator<=(const X& other) const { return this->value <= other.value;}
+    bool operator>=(const X& other) const { return this->value >= other.value;}
+
+    int value;
 };
- */
+
+std::vector<std::uintptr_t > X::addresses;
+
+struct cmpX {
+    bool operator() (const X&first, const X& second) const {
+        return first < second;
+    }
+};
 
 template <typename Value>
 bool CheckHeap(FibHeap<Value>& heap, std::vector<Value>& values) {
@@ -124,7 +135,7 @@ bool CheckHeap(FibHeap<Value>& heap, std::vector<Value>& values) {
 	}
 	return heap.empty();
 }
-/*
+
 TEST_CASE( "Default constructor test" ) {
 	FibHeap<int> testHeap;
 
@@ -596,6 +607,7 @@ TEST_CASE( "Heap union test" ) {
 	}
 }
 
+
 TEST_CASE( "Delete value and increase key test" ) {
 	FibHeap<int> testHeap{20,30,40};
 	auto H50 = testHeap.insert(50);
@@ -617,12 +629,55 @@ TEST_CASE( "Delete value and increase key test" ) {
 	REQUIRE_THROWS(testHeap.increase_key(H50, 120));
 	REQUIRE_THROWS(testHeap.increase_key(H10, 0));
 }
-*/
 
-TEST_CASE( "Work with handlers" ) {
+
+TEST_CASE( "Delete value test") {
+    FibHeap<int> testHeap{20,30,40};
+    auto H50 = testHeap.insert(50);
+    auto H10 = testHeap.insert(10);
+    for (unsigned i = 6; i <= 10; ++i) {
+        testHeap.insert(10*i);
+    }
+
+    testHeap.delete_value(H10);
+    testHeap.delete_value(H50);
+    std::vector<int> vec = {20,30,40,60,70,80,90,100};
+    REQUIRE(CheckHeap(testHeap, vec));
+}
+
+
+TEST_CASE( "Work with handlers (delete value)" ) {
     std::vector<FibHeap<int, std::greater<int>>::Handler> handlers;
     FibHeap<int, std::greater<int>> fibHeap;
-    const int HEAP_SIZE = 1001;
+    const size_t HEAP_SIZE = 6;
+    const size_t AFTER_DEL = HEAP_SIZE/2;
+
+    for (unsigned i = 0; i < HEAP_SIZE; ++i) {
+        handlers.push_back(fibHeap.insert(10*i));
+    }
+    REQUIRE(fibHeap.size() == HEAP_SIZE);
+    REQUIRE(fibHeap.top() == 0);
+
+    for (unsigned i = 0; i < HEAP_SIZE; i +=2) {
+        auto handler = std::move(handlers.at(i));
+        fibHeap.delete_value(handler);
+    }
+
+    REQUIRE(fibHeap.size() == AFTER_DEL);
+    REQUIRE(fibHeap.top() == 10);
+    for (unsigned i = 0; i < AFTER_DEL; ++i) {
+        REQUIRE(!fibHeap.empty());
+        REQUIRE(fibHeap.top() == 20*i + 10);
+        fibHeap.extract_top();
+    }
+    REQUIRE(fibHeap.empty());
+}
+
+
+TEST_CASE( "Work with handlers (decrease key)" ) {
+    std::vector<FibHeap<int, std::greater<int>>::Handler> handlers;
+    FibHeap<int, std::greater<int>> fibHeap;
+    const int HEAP_SIZE = 10000;
 
     for (unsigned i = 1; i <= HEAP_SIZE; ++i) {
         handlers.push_back(fibHeap.insert(10*i));
@@ -645,5 +700,31 @@ TEST_CASE( "Work with handlers" ) {
     }
     REQUIRE(fibHeap.empty());
 }
+
+TEST_CASE("Memory leak test test") {
+    std::vector<int> vector = {1,3,5,7,9,11,13, -13};
+    FibHeap<X, cmpX> testHeap1{10,20,30,40,50,45,35,25,15,5};
+    FibHeap<X, cmpX> testHeap3 = testHeap1;
+    FibHeap<X, cmpX> testHeap4;
+    FibHeap<X, cmpX> testHeap6(vector.begin(), vector.end());
+    for (unsigned i = 0; i < 10; ++i) {
+        testHeap4.insert(-4*i);
+    }
+    FibHeap<X, cmpX> testHeap5(testHeap4);
+    testHeap4 = std::move(testHeap1);
+    REQUIRE(testHeap4.top().value == 5);
+    REQUIRE(testHeap1.empty());
+    REQUIRE(testHeap3.size() == 10);
+    testHeap3.uniteWith(testHeap6);
+    REQUIRE(testHeap6.empty());
+    testHeap3.extract_top();
+    REQUIRE(testHeap3.top().value == 1);
+    auto H100 = testHeap3.insert(X(100));
+    testHeap3.increase_key(H100, X(99));
+    testHeap3.delete_value(H100);
+    testHeap1.swap(testHeap3);
+}
+
+
 
 

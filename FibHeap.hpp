@@ -152,11 +152,6 @@ public:
 
 	//inserts new value into Fibonacci Heap
 	//returns handler for this value
-	/*Handler insert(const Value &val) {
-		return insert(static_cast<Value&&>(static_cast<Value>(val)));
-	}*/
-
-	//moves new value into Fibonacci Heap
 	template <typename T = Value>
 	Handler insert(T &&val) {
 		Node *n = insert_help(std::forward<T>(val),
@@ -342,8 +337,12 @@ private:
 			child = child->m_right;
 		}
 		//child == current
-		child->m_right->m_left = child->m_left;
-		child->m_left->m_right = child->m_right;
+		if(parent->m_degree > 1) {
+			child->m_right->m_left = child->m_left;
+			child->m_left->m_right = child->m_right;
+		}else {
+			parent->m_child = nullptr;
+		}
 
 		parent->m_degree--;
 
@@ -385,19 +384,20 @@ private:
 
 		for(int i = 0; i < m_number; i++){
 			unsigned degree = current->m_degree;
+			Node *current_parent = current;
 
-			while((trees[degree] != nullptr) && (trees[degree] != current)) {
+			while((trees[degree] != nullptr)) {
 				Node *son = trees[degree];
-                Node *parent = current;
+                Node *parent = current_parent;
 
-				if(compare(parent->m_key, son->m_key)){
-                    current = current->m_left;
+				if(compare(parent->m_key, son->m_key)) {
 					Node *tmp = son;
                     son = parent;
                     parent = tmp;
 				}
-				//current is parent
-				//other is son
+
+				if(current == son)
+					current = current->m_left;
 
                 son->m_right->m_left = son->m_left;
                 son->m_left->m_right = son->m_right;
@@ -419,6 +419,7 @@ private:
                 parent->m_degree++;
 				trees[degree] = nullptr;
 				degree++;
+				current_parent = parent;
 			}
 
 			trees[degree] = current;
