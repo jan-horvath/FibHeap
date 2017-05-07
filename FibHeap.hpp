@@ -1,7 +1,3 @@
-//
-// Created by Jan Horvath on 16-Apr-17.
-//
-
 #ifndef FIBHEAP_FIBHEAP_HPP
 #define FIBHEAP_FIBHEAP_HPP
 
@@ -9,11 +5,20 @@
 #include <cstdio>
 #include <functional>
 #include <cmath>
-
-//default function for compare makes maximal Fibonacci Heap
+/**
+ * default function for compare makes maximal Fibonacci Heap
+ */
 template <typename Value, typename Compare = std::less<Value>>
 class FibHeap {
 public:
+	/**
+	 * class for definitions of Nodes in the fibonacci heap
+	 * every node has
+	 * 		left sibling, right sibling, parent and child - pointers to Nodes (nullptr if does not have)
+	 * 		m_mark - indicates if at least one child has been taken
+	 * 		m_degree - number of children
+	 * 		m_key - value hold in the Node
+	 */
 	class Node {
 		Node* m_left;
 		Node* m_right;
@@ -38,6 +43,10 @@ public:
 			return *this;
 		}
 
+		/**
+		 * swaps two Nodes
+		 * @param other Node to swap with
+		 */
 		void swap(Node &other) {
 			std::swap(other.m_left, m_left);
 			std::swap(other.m_right, m_right);
@@ -53,6 +62,13 @@ public:
 		friend class FibHeap;
 	};
 
+	/**
+	 * class for handling the pointer to a certain Node
+	 * is returned in insert to store an inserted Node
+	 * every handler has
+	 * 		m_node - pointer to a Node
+	 * 		m_exists - indicates if stored Node exists
+	 */
 	class Handler {
 		Node* m_node;
 		bool m_exists;
@@ -76,6 +92,10 @@ public:
 			return *this;
 		}
 
+		/**
+		 *
+		 * @return value of the stored Node
+		 */
         const Value& value() const {
             return m_node->m_key;
         }
@@ -85,10 +105,17 @@ public:
 		friend class FibHeap;
 	};
 
-	//creates empty Fibonacci Heap
+	/**
+	 * creates empty Fibonacci heap
+	 * @return empty Fibonacci heap
+	 */
 	FibHeap(): m_top(nullptr), m_number(0), m_size(0) {}
 
-	//copy constructs Fibonacci Heap (deep copy)
+	/**
+	 * copy constructs Fibonacci heap (deep copy)
+	 * @param other heap to copy from
+	 * @return copied heap
+	 */
 	FibHeap(const FibHeap &other) : m_top(nullptr) {
 		if(other.m_top) {
 			m_top = new Node(other.top());
@@ -99,23 +126,35 @@ public:
 		m_size = other.m_size;
 	}
 
-	//move constructs Fibonacci Heap
+	/**
+	 * move constructs Fibonacci heap
+	 * @param other heap to move from
+	 * @return moved heap
+	 */
 	FibHeap(FibHeap &&other) noexcept : m_top(nullptr), m_number(0), m_size(0) {
 		*this = std::move(other);
 	}
 
-	//copy assignment operator
+	/**
+	 * copy assignment operator
+	 * @param other heap to copy assign from
+	 * @return copy assigned heap
+	 */
 	FibHeap &operator=(const FibHeap &other) {
 		FibHeap tmp(other);
 		swap(tmp);
 		return *this;
 	}
 
-	//move assignment operator
+	/**
+	 * move assignment operator
+	 * @param other heap to move assign from
+	 * @return move assigned heap
+	 */
 	FibHeap &operator=(FibHeap &&other) noexcept {
         if (m_top)
             deleteFibHeap(m_top, m_top);
-
+            
 		m_top = other.m_top;
 		other.m_top = nullptr;
 
@@ -132,39 +171,62 @@ public:
             deleteFibHeap(m_top, m_top);
     }
 
-	//constructs Fibonacci Heap from range
+	/**
+	 * constructs Fibonacci heap from range
+	 * @param begin begin of the range
+	 * @param end end of the range
+	 * @return constructed heap
+	 */
 	template <typename It>
 	FibHeap(It begin, It end) : m_top(nullptr), m_number(0), m_size(0) {
 		for(It i = begin; i != end; i++)
 			insert(*i);
 	}
 
-	//constructs Fibonacci Heap from initializer list
+	/**
+	 * constructs Fibonacci heap from initializer list
+	 * @param list list to constract heap from
+	 * @return constructed heap
+	 */
 	FibHeap(std::initializer_list<Value> list) : m_top(nullptr), m_number(0), m_size(0) {
 		for(Value v : list)
 			insert(v);
 	}
 
-	//Returns top value of Fibonacci Heap
-	//Can only be called if the heap is not empty
-	//May throw exceptions
+	/**
+	 * returns top value of Fibonacci heap
+	 * can only be called if the heap is not empty
+	 * may throw exceptions
+	 * @return value of the top Node
+	 */
 	const Value& top() const {
         if (!m_top) throw std::runtime_error("dereferencing nullptr (top)");
 		return m_top->m_key;
 	}
 
-	//returns true if heap is empty
+	/**
+	 *
+	 * @return true if heap is empty
+	 */
 	bool empty() const {
 		return size() == 0;
 	}
 
-	//returns size of the heap
+	/**
+	 *
+	 * @return size of the heap
+	 */
 	size_t size() const {
 		return m_size;
 	}
 
-	//inserts new value into Fibonacci Heap
-	//returns handler for this value
+	/**
+	 * inserts new value into Fibonacci heap
+	 * function calls implementation of insert_help
+	 * returns Handler for this value
+	 * @param val value to insert
+	 * @return Handler to inserted Node
+	 */
 	template <typename T = Value>
 	Handler insert(T &&val) {
 		Node *n = insert_help(std::forward<T>(val),
@@ -191,10 +253,13 @@ public:
 		return Handler(n);
 	}
 
-	//unites current heap with another one
-	//the other heap is invalidated
-	//current heap will contain all values
-	//any Handlers created by the other heap have to be valid (for the current heap)
+	/**
+	 * unites current heap with another one
+	 * the other heap is invalidated
+	 * current heap will contain all values
+	 * any Handlers created by the other heap have to be valid (for the current heap)
+	 * @param other heap to unite current with
+	 */
 	void uniteWith(FibHeap &other){
 		if(other.empty() || this->m_top == other.m_top){
 			return;
@@ -233,9 +298,11 @@ public:
 		other.m_number = 0;
 	}
 
-	//extracts top value
-	//this value is removed from the heap and new one is selected
-	//this function also calls the consolidate function
+	/**
+	 * extracts top value
+	 * this value is removed from the heap and new one is selected
+	 * this function also calls the consolidate function
+	 */
 	void extract_top(){
 		if(size() == 1) {
 			delete m_top;
@@ -285,13 +352,15 @@ public:
 		consolidate();
 	}
 
-	//deletes value pointed to by handler
-	//handler is supplied by the insert function
-	//returns true if deletion was successful
-	//may throw exceptions
-	bool delete_value(Handler &h){
+	/**
+	 * deletes value pointed to by Handler
+	 * Handler is supplied by the insert function
+	 * may throw exceptions
+	 * @param h Handler to Node to delete
+	 */
+	void delete_value(Handler &h){
 		if(!h.m_exists || !h.m_node)
-			throw std::invalid_argument("Handler does not exist or does not have a pointer to a Node!");		//maybe return false?
+			throw std::invalid_argument("Handler does not exist or does not have a pointer to a Node!");
 
 		Node *node = h.m_node;
 		Node *parent = node->m_parent;
@@ -305,21 +374,23 @@ public:
 		extract_top();
 
 		h.m_exists = false;
-
-		return true;
 	}
 
-	//increase value of a key, pointed to by handler
-	//may cascade cut the heap
-	//here, increase means changing the value so that Compare(old_value, new_value) returns true
-	//may throw exceptions (for non-existing value and for non-satisfying new_value)
-	bool increase_key(const Handler &h, const Value &new_value){
+	/**
+	 * increase value of a key, pointed to by Handler
+	 * may cascade cuts the heap
+	 * here, increase means changing the value so that Compare(old_value, new_value) returns true
+	 * may throw exceptions (for non-existing value and for non-satisfying new_value)
+	 * @param h Handler to Node to change key
+	 * @param new_value value to change Node's value to
+	 */
+	void increase_key(const Handler &h, const Value &new_value){
 		if(!h.m_exists || !h.m_node)
-			throw std::invalid_argument("Handler does not exist or does not have a pointer to a Node!");		//maybe return false?
+			throw std::invalid_argument("Handler does not exist or does not have a pointer to a Node!");
 
 		Value *curr_value = &h.m_node->m_key;
 		if(!compare(*curr_value, new_value))
-			throw std::invalid_argument("Wrong new value in increase_key!");	//maybe return false?
+			throw std::invalid_argument("Wrong new value in increase_key!");
 
 		*curr_value = new_value;
 		Node *parent = h.m_node->m_parent;
@@ -332,11 +403,12 @@ public:
 		if(!compare(h.m_node->m_key, m_top->m_key)) {
 			m_top = h.m_node;
 		}
-
-		return true;
 	}
 
-	//swaps two different Fibonacci Heaps
+	/**
+	 * swaps two different Fibonacci heaps
+	 * @param heap heap to swap with
+	 */
 	void swap(FibHeap &heap){
 		std::swap(m_top, heap.m_top);
 		std::swap(m_number, heap.m_number);
@@ -344,6 +416,11 @@ public:
 	}
 
 private:
+	/**
+	 * cuts the current branch and puts it in the list of tops
+	 * @param current Node to cut
+	 * @param parent parent of the @current Node
+	 */
 	void cutBranch(Node *current, Node *parent){
 		/*if(!parent)
 			return;*/
@@ -377,6 +454,10 @@ private:
         m_number++;
 	}
 
+	/**
+	 * cuts branches until heap satisfy the requirements of Fibonacci heap
+	 * @param node Node to cut from
+	 */
 	void cascadingCutBranch(Node *node){
 		Node *parent = node->m_parent;
 
@@ -393,13 +474,19 @@ private:
 		node->m_mark = true;
 	}
 
+	/**
+	 * computes max degree of all heap parts
+	 * @return max degree for heaps
+	 */
 	int maxDegree(){
 		using namespace std;
 		return static_cast<int>(ceil(log(static_cast<double>(m_size))/log(static_cast<double>(1 + sqrt(static_cast<double>(5)))/2))) + 100;
 	}
 
-	//modifies the heap so that it does not contain two trees with the same degree
-	//ensures the amortized logatimic deletion and extract-top time
+	/**
+	 * modifies the heap so that it does not contain two trees with the same degree
+	 * ensures the amortized logatimic deletion and extract-top time
+	 */
 	void consolidate(){
 		std::vector<Node*> trees(maxDegree(), nullptr);
 		Node *current = m_top;
@@ -495,6 +582,12 @@ private:
 		to.m_mark = from.m_mark;
 	}
 
+	/**
+	 * compares two values with function if the heap
+	 * @param a first value
+	 * @param b second value
+	 * @return true/false according to Compare function
+	 */
 	bool compare(const Value &a, const Value &b) const {
 		Compare cmp = Compare();
 		return cmp(a,b);
@@ -505,14 +598,24 @@ private:
         return cmp(a,b);
     }
 
+	/**
+	 * implementation of insert for rvalue values
+	 * @param t value to insert
+	 * @return created Node from the value @t
+	 */
 	template <typename T = Value>
-	Node* insert_help(T&& t, std::false_type) { //NOLINT
+	Node* insert_help(T&& t, std::false_type) {
 		auto n = new Node(std::move(t));
 		return n;
 	}
 
+	/**
+	 * implementation of insert for lvalue values
+	 * @param t value to insert
+	 * @return created Node from the value @t
+	 */
 	template <typename T = Value>
-	Node* insert_help(const T& t, std::true_type) { //NOLINT
+	Node* insert_help(const T& t, std::true_type) {
 		auto n = new Node(t);
 		return n;
 	}
