@@ -226,7 +226,7 @@ class FibHeap {
    */
   const Value& top() const {
     if (!m_top)
-      throw std::runtime_error("dereferencing nullptr (top)");
+      throw std::runtime_error("Dereferencing nullptr(top)!");
     return m_top->m_key;
   }
 
@@ -509,8 +509,7 @@ class FibHeap {
     return static_cast<int>(
                ceil(log(static_cast<double>(m_size)) /
                     log(static_cast<double>(1 + sqrt(static_cast<double>(5))) /
-                        2))) +
-           1;
+                        2))) + 1;
   }
 
   /**
