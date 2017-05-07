@@ -35,6 +35,10 @@ struct Copyable {
 		return !((*this)==o);
 	}
 
+    int getValue() const {
+        return value;
+    }
+
 private:
 	int value;
 };
@@ -42,10 +46,10 @@ private:
 struct Movable {
 	Movable() : value(0) {}
 	Movable(int v) : value(v) {}
-	Movable(Movable&& o) : value(o.value) {
+	Movable(Movable&& o) noexcept : value(o.value) {
 		o.value = 0;
 	}
-	Movable &operator= (Movable&& o) {
+	Movable &operator= (Movable&& o) noexcept {
 		value = o.value;
 		o.value = 0;
 		return *this;
@@ -71,6 +75,11 @@ struct Movable {
 	bool operator!= (const Movable &o) const  {
 		return !((*this)==o);
 	}
+
+    int getValue() const {
+        return value;
+    }
+
 private:
 	int value;
 };
@@ -79,16 +88,16 @@ struct X {
     static std::vector<std::uintptr_t> addresses;
 
     X() : value(0) {
-        X::addresses.push_back(reinterpret_cast<std::uintptr_t>(this));
+        X::addresses.push_back(reinterpret_cast<std::uintptr_t>(this)); //NOLINT
         //std::cout << "X constructed with value " << value << "\n";
     }
 
     X(const X& other) : value(other.value) {
-        X::addresses.push_back(reinterpret_cast<std::uintptr_t>(this));
+        X::addresses.push_back(reinterpret_cast<std::uintptr_t>(this)); //NOLINT
         //std::cout << "X copy constructed with value " << value << "\n";
     }
-    X(X&& other) : value(other.value) {
-        X::addresses.push_back(reinterpret_cast<std::uintptr_t>(this));
+    X(X&& other) noexcept : value(other.value) {
+        X::addresses.push_back(reinterpret_cast<std::uintptr_t>(this)); //NOLINT
         //std::cout << "X move constructed with value " << value << "\n";
     }
 
@@ -98,13 +107,13 @@ struct X {
     }
 
     X(int i) : value(i) {
-        X::addresses.push_back(reinterpret_cast<std::uintptr_t>(this));
+        X::addresses.push_back(reinterpret_cast<std::uintptr_t>(this)); //NOLINT
         //std::cout << "X constructed with value " << value << "\n";
     }
     ~X() {
         //std::cout << "X destroyed with value " << value << "\n";
-        REQUIRE(std::find(addresses.begin(), addresses.end(), reinterpret_cast<std::uintptr_t>(this)) != addresses.end());
-        addresses.erase(std::remove(addresses.begin(), addresses.end(), reinterpret_cast<std::uintptr_t>(this)), addresses.end());
+        REQUIRE(std::find(addresses.begin(), addresses.end(), reinterpret_cast<std::uintptr_t>(this)) != addresses.end()); //NOLINT
+        addresses.erase(std::remove(addresses.begin(), addresses.end(), reinterpret_cast<std::uintptr_t>(this)), addresses.end()); //NOLINT
     }
 
     bool operator<(const X& other) const { return this->value > other.value;}
@@ -136,58 +145,59 @@ bool CheckHeap(FibHeap<Value>& heap, std::vector<Value>& values) {
 	return heap.empty();
 }
 
-TEST_CASE( "Default constructor test" ) {
+
+TEST_CASE( "Default constructor test" ) { //NOLINT
 	FibHeap<int> testHeap;
 
 	REQUIRE(testHeap.empty());
-	REQUIRE(testHeap.size() == 0);
+	REQUIRE(testHeap.size() == 0); //NOLINT
 }
 
-TEST_CASE( "Copy constructor test, empty heap" ) {
+TEST_CASE( "Copy constructor test, empty heap" ) { //NOLINT
 	FibHeap<int> emptyHeap;
-	FibHeap<int> copiedHeap(emptyHeap);
+	FibHeap<int> copiedHeap(emptyHeap); //NOLINT
 
 	REQUIRE(copiedHeap.empty());
-	REQUIRE(copiedHeap.size() == 0);
+	REQUIRE(copiedHeap.size() == 0); //NOLINT
 
 	REQUIRE(copiedHeap.empty() == emptyHeap.empty());
 	REQUIRE(copiedHeap.size() == emptyHeap.size());
 }
 
-TEST_CASE( "Move constructor test, empty heap" ) {
+TEST_CASE( "Move constructor test, empty heap" ) { //NOLINT
 	FibHeap<int> emptyHeap;
 	FibHeap<int> movedHeap(std::move(emptyHeap));
 
 	REQUIRE(movedHeap.empty());
-	REQUIRE(movedHeap.size() == 0);
+	REQUIRE(movedHeap.size() == 0); //NOLINT
 
 	REQUIRE(movedHeap.empty() == emptyHeap.empty());
 	REQUIRE(movedHeap.size() == emptyHeap.size());
 }
 
-TEST_CASE( "Copy assignment, empty heap" ) {
+TEST_CASE( "Copy assignment, empty heap" ) { //NOLINT
 	FibHeap<int> emptyHeap;
-	FibHeap<int> copiedHeap = emptyHeap;
+	FibHeap<int> copiedHeap = emptyHeap; //NOLINT
 
 	REQUIRE(copiedHeap.empty());
-	REQUIRE(copiedHeap.size() == 0);
+	REQUIRE(copiedHeap.size() == 0); //NOLINT
 
 	REQUIRE(copiedHeap.empty() == emptyHeap.empty());
 	REQUIRE(copiedHeap.size() == emptyHeap.size());
 }
 
-TEST_CASE( "Move assignment, empty heap" ) {
+TEST_CASE( "Move assignment, empty heap" ) { //NOLINT
 	FibHeap<int> emptyHeap;
 	FibHeap<int> movedHeap = std::move(emptyHeap);
 
 	REQUIRE(movedHeap.empty());
-	REQUIRE(movedHeap.size() == 0);
+	REQUIRE(movedHeap.size() == 0); //NOLINT
 
 	REQUIRE(movedHeap.empty() == emptyHeap.empty());
 	REQUIRE(movedHeap.size() == emptyHeap.size());
 }
 
-TEST_CASE( "Simple insert test" ) {
+TEST_CASE( "Simple insert test" ) { //NOLINT
 	FibHeap<int> testHeap;
 
 	testHeap.insert(5);
@@ -205,10 +215,9 @@ TEST_CASE( "Simple insert test" ) {
 	REQUIRE(!testHeap.empty());
 	REQUIRE(testHeap.size() == 3);
 	REQUIRE(testHeap.top() == 10);
-
 }
 
-TEST_CASE( "Simple extract_top test" ) {
+TEST_CASE( "Simple extract_top test" ) { //NOLINT
 	FibHeap<int> testHeap;
 
 	testHeap.insert(13);
@@ -230,16 +239,16 @@ TEST_CASE( "Simple extract_top test" ) {
 
 	testHeap.extract_top();
 	REQUIRE(testHeap.empty());
-	REQUIRE(testHeap.size() == 0);
+	REQUIRE(testHeap.size() == 0);//NOLINT
 }
 
-TEST_CASE( "Simple range constructor" ) {
+TEST_CASE( "Simple range constructor" ) { //NOLINT
 	std::vector<int> emptyVector;
 	std::vector<int> nEmptyVector = {1,3,5,7,9,11,13, -13};
 
 	FibHeap<int> emptyHeap(emptyVector.begin(), emptyVector.end());
 	REQUIRE(emptyHeap.empty());
-	REQUIRE(emptyHeap.size() == 0);
+	REQUIRE(emptyHeap.size() == 0); //NOLINT
 
 	FibHeap<int> nEmptyHeap(nEmptyVector.begin(), nEmptyVector.end());
 	REQUIRE(!nEmptyHeap.empty());
@@ -257,7 +266,7 @@ TEST_CASE( "Simple range constructor" ) {
 	REQUIRE(nEmptyHeap.size() == 1);
 }
 
-TEST_CASE( "Simple initializer list constructor test" ) {
+TEST_CASE( "Simple initializer list constructor test" ) { //NOLINT
 	FibHeap<int> testHeap{1,3,9,5,0,8};
 	REQUIRE(testHeap.top() == 9);
 	REQUIRE(testHeap.size() == 6);
@@ -265,7 +274,7 @@ TEST_CASE( "Simple initializer list constructor test" ) {
 	REQUIRE(testHeap.top() == 8);
 }
 
-TEST_CASE( "Simple heap union test" ) {
+TEST_CASE( "Simple heap union test" ) { //NOLINT
 	FibHeap<int> testHeap1{3,2,1,10,20};
 	FibHeap<int> testHeap2{6,5,4,15,25};
 
@@ -281,7 +290,7 @@ TEST_CASE( "Simple heap union test" ) {
 	REQUIRE(testHeap2.empty());
 }
 
-TEST_CASE( "Simple delete value test" ) {
+TEST_CASE( "Simple delete value test" ) { //NOLINT
 	FibHeap<int> testHeap;
 	testHeap.insert(3);
 	testHeap.insert(9);
@@ -293,7 +302,7 @@ TEST_CASE( "Simple delete value test" ) {
 	REQUIRE(testHeap.top() == 3);
 }
 
-TEST_CASE( "Simple increase key test" ) {
+TEST_CASE( "Simple increase key test" ) { //NOLINT
 	FibHeap<int> testHeap;
 	testHeap.insert(9);
 	testHeap.insert(6);
@@ -305,7 +314,7 @@ TEST_CASE( "Simple increase key test" ) {
 	REQUIRE(testHeap.top() == 7);
 }
 
-TEST_CASE( "Simple swap test" ) {
+TEST_CASE( "Simple swap test" ) { //NOLINT
 	FibHeap<int> testHeap1{10,20,30};
 	FibHeap<int> testHeap2{8,9,10,15,20,25};
 	testHeap1.swap(testHeap2);
@@ -318,7 +327,7 @@ TEST_CASE( "Simple swap test" ) {
 
 // #################################################### EXTENDED TESTS ###################################### //
 
-TEST_CASE( "Copy constructor test" ) {
+TEST_CASE( "Copy constructor test" ) { //NOLINT
 	FibHeap<int> testHeap{0,5,10,15,20, 35};
 	auto H25 = testHeap.insert(25);
 	auto H30 = testHeap.insert(30);
@@ -355,7 +364,7 @@ TEST_CASE( "Copy constructor test" ) {
 	}
 }
 
-TEST_CASE( "Move constructor test" ) {
+TEST_CASE( "Move constructor test" ) { //NOLINT
 	FibHeap<int> movedFrom;
 	movedFrom.insert(20);
 	movedFrom.insert(15);
@@ -397,7 +406,7 @@ TEST_CASE( "Move constructor test" ) {
 	}
 }
 
-TEST_CASE( "Copy assignment operator test" ) {
+TEST_CASE( "Copy assignment operator test" ) { //NOLINT
 	FibHeap<int> testHeap{0,5,10,15,20, 35};
 	auto H25 = testHeap.insert(25);
 	auto H30 = testHeap.insert(30);
@@ -436,7 +445,7 @@ TEST_CASE( "Copy assignment operator test" ) {
 	}
 }
 
-TEST_CASE( "Move assignment operator test" ) {
+TEST_CASE( "Move assignment operator test" ) { //NOLINT
 	FibHeap<int> movedFrom;
 	movedFrom.insert(20);
 	movedFrom.insert(15);
@@ -481,51 +490,57 @@ TEST_CASE( "Move assignment operator test" ) {
 	}
 }
 
-TEST_CASE( "Insert test" ) {
+TEST_CASE( "Insert test" ) { //NOLINT
 	SECTION("Copyable") {
-		std::vector<Copyable> copyables;
-		std::vector<int> vector{32};
+		std::vector<Copyable> copyables, copyables2;
+		std::vector<int> vector{50,20,25,10,30,5,35,15,45,40};
+        std::vector<int> vector2{50,45,40,35,30,25,20,15,10,5};
 
 		for(int i : vector) {
 			Copyable x(i);
 			copyables.push_back(x);
 		}
 
+        for(int i : vector2) {
+            Copyable x(i);
+            copyables2.push_back(x);
+        }
+
 		FibHeap<Copyable> testHeap;
 
-		for (unsigned i = 0; i < copyables.size(); ++i) {
-			testHeap.insert(copyables.at(i));
-			REQUIRE(copyables.at(i) != 0);
+		for (const auto &c : copyables) {
+			testHeap.insert(c);
+			REQUIRE(c.getValue() != 0);
 		}
 
-		for (auto &value : copyables) {
-			REQUIRE(value == testHeap.top());
+		for (auto &value : copyables2) {
+			REQUIRE(value.getValue() == testHeap.top().getValue());
 			testHeap.extract_top();
 		}
 		REQUIRE(testHeap.empty());
 	}
 	SECTION("Movable") {
 		std::vector<Movable> movables;
-		movables.push_back(Movable(8));
-		movables.push_back(Movable(16));
-		movables.push_back(Movable(32));
-		movables.push_back(Movable(2));
-		movables.push_back(Movable(4));
-		movables.push_back(Movable(16));
-		movables.push_back(Movable(32));
-		movables.push_back(Movable(1));
-		movables.push_back(Movable(1));
+		movables.emplace_back(Movable(8));
+		movables.emplace_back(Movable(16));
+		movables.emplace_back(Movable(32));
+		movables.emplace_back(Movable(2));
+		movables.emplace_back(Movable(4));
+		movables.emplace_back(Movable(16));
+		movables.emplace_back(Movable(32));
+		movables.emplace_back(Movable(1));
+		movables.emplace_back(Movable(1));
 
 		FibHeap<Movable> testHeap;
 
-		for (unsigned i = 0; i < movables.size(); ++i) {
-			testHeap.insert(std::move(movables.at(i)));
-			REQUIRE(movables.at(i) == 0);
+		for (auto &m : movables) {
+			testHeap.insert(std::move(m));
+			REQUIRE(m.getValue() == 0);
 		}
 	}
 }
 
-TEST_CASE( "Heap union test" ) {
+TEST_CASE( "Heap union test" ) { //NOLINT
 	SECTION( "Union - empty heap(s)" ) {
 		FibHeap<int> emptyHeap1;
 		FibHeap<int> emptyHeap2;
@@ -534,18 +549,18 @@ TEST_CASE( "Heap union test" ) {
 
 		SECTION("Empty-empty union") {
 			emptyHeap1.uniteWith(emptyHeap2);
-			REQUIRE(emptyHeap1.size() == 0);
-			REQUIRE(emptyHeap2.size() == 0);
+			REQUIRE(emptyHeap1.empty());
+			REQUIRE(emptyHeap2.empty());
 		}
 		SECTION("Empty-nonempty union") {
 			emptyHeap1.uniteWith(testHeap);
 			REQUIRE(emptyHeap1.size() == 5);
-			REQUIRE(testHeap.size() == 0);
+			REQUIRE(testHeap.empty());
 			REQUIRE(CheckHeap(emptyHeap1,vector));
 		}
 		SECTION("Nonempty-empty union") {
 			testHeap.uniteWith(emptyHeap2);
-			REQUIRE(emptyHeap2.size() == 0);
+			REQUIRE(emptyHeap2.empty());
 			REQUIRE(testHeap.size() == 5);
 			REQUIRE(CheckHeap(testHeap, vector));
 		}
@@ -565,7 +580,7 @@ TEST_CASE( "Heap union test" ) {
 		}
 		SECTION("Duplicate values") {
 			testHeap2.uniteWith(testHeap4);
-			REQUIRE(testHeap4.size() == 0);
+			REQUIRE(testHeap4.empty());
 			REQUIRE(testHeap2.size() == 20);
 			REQUIRE(CheckHeap(testHeap2, unitedVector));
 		}
@@ -574,13 +589,13 @@ TEST_CASE( "Heap union test" ) {
 	SECTION("Handlers check") {
 		FibHeap<int> testHeap1{50,100};
 		auto H75 = testHeap1.insert(75);
-		auto H120 = testHeap1.insert(120);
+        testHeap1.insert(120);
 		FibHeap<int> testHeap2{89,99};
 		auto H109 = testHeap2.insert(109);
 
 		SECTION("1 <- 2 with delete value") {
 			testHeap1.uniteWith(testHeap2);
-			REQUIRE(testHeap2.size() == 0);
+			REQUIRE(testHeap2.empty());
 			REQUIRE(testHeap1.size() == 7);
 			REQUIRE(testHeap1.top() == 120);
 			testHeap1.extract_top();
@@ -594,7 +609,7 @@ TEST_CASE( "Heap union test" ) {
 
 		SECTION("2 <- 1 with increase value") {
 			testHeap2.uniteWith(testHeap1);
-			REQUIRE(testHeap1.size() == 0);
+			REQUIRE(testHeap1.empty());
 			REQUIRE(testHeap2.size() == 7);
 			REQUIRE(testHeap2.top() == 120);
 			testHeap2.increase_key(H75, 500);
@@ -607,8 +622,7 @@ TEST_CASE( "Heap union test" ) {
 	}
 }
 
-
-TEST_CASE( "Delete value and increase key test" ) {
+TEST_CASE( "Delete value and increase key test" ) { //NOLINT
 	FibHeap<int> testHeap{20,30,40};
 	auto H50 = testHeap.insert(50);
 	auto H10 = testHeap.insert(10);
@@ -622,7 +636,8 @@ TEST_CASE( "Delete value and increase key test" ) {
 
 	testHeap.delete_value(H50);
 	REQUIRE(testHeap.top() == 40);
-	REQUIRE_THROWS(testHeap.delete_value(H50));
+	REQUIRE_THROWS(testHeap.delete_value(H50)); //still reachable 16 bytes
+
 
 	testHeap.increase_key(H10, 100);
 	REQUIRE(testHeap.top() == 100);
@@ -631,7 +646,7 @@ TEST_CASE( "Delete value and increase key test" ) {
 }
 
 
-TEST_CASE( "Delete value test") {
+TEST_CASE( "Delete value test") { //NOLINT
     FibHeap<int> testHeap{20,30,40};
     auto H50 = testHeap.insert(50);
     auto H10 = testHeap.insert(10);
@@ -646,7 +661,7 @@ TEST_CASE( "Delete value test") {
 }
 
 
-TEST_CASE( "Work with handlers (delete value)" ) {
+TEST_CASE( "Work with handlers (delete value)" ) { //NOLINT
     std::vector<FibHeap<int, std::greater<int>>::Handler> handlers;
     FibHeap<int, std::greater<int>> fibHeap;
     const size_t HEAP_SIZE = 6;
@@ -674,7 +689,7 @@ TEST_CASE( "Work with handlers (delete value)" ) {
 }
 
 
-TEST_CASE( "Work with handlers (decrease key)" ) {
+TEST_CASE( "Work with handlers (decrease key)" ) { //NOLINT
     std::vector<FibHeap<int, std::greater<int>>::Handler> handlers;
     FibHeap<int, std::greater<int>> fibHeap;
     const int HEAP_SIZE = 10000;
@@ -701,7 +716,7 @@ TEST_CASE( "Work with handlers (decrease key)" ) {
     REQUIRE(fibHeap.empty());
 }
 
-TEST_CASE("Memory leak test test") {
+TEST_CASE("Memory leak test test") { //NOLINT
     std::vector<int> vector = {1,3,5,7,9,11,13, -13};
     FibHeap<X, cmpX> testHeap1{10,20,30,40,50,45,35,25,15,5};
     FibHeap<X, cmpX> testHeap3 = testHeap1;

@@ -27,7 +27,7 @@ public:
 		Node() : m_left(nullptr), m_right(nullptr), m_parent(nullptr), m_child(nullptr)
 				, m_mark(false), m_degree(0), m_key(0) {};
 		Node(const Value &val) : m_left(nullptr), m_right(nullptr), m_parent(nullptr), m_child(nullptr)
-		, m_mark(false), m_degree(0), m_key(val) {};
+		, m_mark(false), m_degree(0), m_key(std::move(val)) {};
 		Node(Value &&val) : m_left(nullptr), m_right(nullptr), m_parent(nullptr), m_child(nullptr)
 				, m_mark(false), m_degree(0), m_key(std::move(val)) {};
 		Node(const Node &n) : m_left(nullptr), m_right(nullptr), m_parent(nullptr), m_child(nullptr)
@@ -48,6 +48,8 @@ public:
 			std::swap(other.m_mark, m_mark);
 		}
 
+        ~Node() = default;
+
 		friend class FibHeap;
 	};
 
@@ -62,11 +64,11 @@ public:
 		Handler(Node* node) : m_node(node), m_exists(true) {}
 
 	public:
-		Handler(Handler &&h) : m_node(h.m_node), m_exists(h.m_exists) {
+		Handler(Handler &&h) noexcept : m_node(h.m_node), m_exists(h.m_exists)  {
 			h.m_node = nullptr;
 			h.m_exists = false;
 		}
-		Handler &operator=(Handler &&h) {
+		Handler &operator=(Handler &&h) noexcept {
 			m_node = h.m_node;
 			m_exists = h.m_exists;
 			h.m_node = nullptr;
@@ -77,6 +79,8 @@ public:
         const Value& value() const {
             return m_node->m_key;
         }
+
+        ~Handler() = default;
 
 		friend class FibHeap;
 	};
@@ -96,7 +100,7 @@ public:
 	}
 
 	//move constructs Fibonacci Heap
-	FibHeap(FibHeap &&other) {
+	FibHeap(FibHeap &&other) noexcept : m_top(nullptr), m_number(0), m_size(0) {
 		*this = std::move(other);
 	}
 
@@ -108,7 +112,10 @@ public:
 	}
 
 	//move assignment operator
-	FibHeap &operator=(FibHeap &&other) {
+	FibHeap &operator=(FibHeap &&other) noexcept {
+        if (m_top)
+            deleteFibHeap(m_top, m_top);
+
 		m_top = other.m_top;
 		other.m_top = nullptr;
 
@@ -119,6 +126,11 @@ public:
 		other.m_size = 0;
 		return *this;
 	}
+
+    ~FibHeap() {
+        if (m_top)
+            deleteFibHeap(m_top, m_top);
+    }
 
 	//constructs Fibonacci Heap from range
 	template <typename It>
@@ -137,6 +149,7 @@ public:
 	//Can only be called if the heap is not empty
 	//May throw exceptions
 	const Value& top() const {
+        if (!m_top) throw std::runtime_error("dereferencing nullptr (top)");
 		return m_top->m_key;
 	}
 
@@ -224,8 +237,8 @@ public:
 	//this value is removed from the heap and new one is selected
 	//this function also calls the consolidate function
 	void extract_top(){
-		if(size() == 1){
-			//delete m_top;
+		if(size() == 1) {
+			delete m_top;
 			m_top = nullptr;
 			m_size = 0;
 			m_number = 0;
@@ -242,7 +255,7 @@ public:
 				left->m_right = child;
 			}
 
-			for (int i = 0; i < m_top->m_degree-1; i++) {
+			for (unsigned i = 0; i < m_top->m_degree-1; i++) {
 				child->m_parent = nullptr;
 				child = child->m_right;
 			}
@@ -316,7 +329,7 @@ public:
 			cascadingCutBranch(parent);
 		}
 
-		if(!compare(h.m_node->m_key, m_top->m_key)){
+		if(!compare(h.m_node->m_key, m_top->m_key)) {
 			m_top = h.m_node;
 		}
 
@@ -332,7 +345,12 @@ public:
 
 private:
 	void cutBranch(Node *current, Node *parent){
+		/*if(!parent)
+			return;*/
 		Node *child = parent->m_child;
+		bool checkChild = false;
+		if (current == child)
+			checkChild = true;
 		while(child != current){
 			child = child->m_right;
 		}
@@ -340,6 +358,8 @@ private:
 		if(parent->m_degree > 1) {
 			child->m_right->m_left = child->m_left;
 			child->m_left->m_right = child->m_right;
+			if(checkChild)
+				parent->m_child = child->m_right;
 		}else {
 			parent->m_child = nullptr;
 		}
@@ -364,6 +384,8 @@ private:
 			return;
 
 		while(node->m_mark){
+			if (!parent)
+				break;
 			cutBranch(node, parent);
 			node = parent;
 			parent = parent->m_parent;
@@ -373,7 +395,7 @@ private:
 
 	int maxDegree(){
 		using namespace std;
-		return static_cast<int>(ceil(log(static_cast<double>(m_size))/log(static_cast<double>(1 + sqrt(static_cast<double>(5)))/2))) + 1;
+		return static_cast<int>(ceil(log(static_cast<double>(m_size))/log(static_cast<double>(1 + sqrt(static_cast<double>(5)))/2))) + 100;
 	}
 
 	//modifies the heap so that it does not contain two trees with the same degree
@@ -382,7 +404,7 @@ private:
 		std::vector<Node*> trees(maxDegree(), nullptr);
 		Node *current = m_top;
 
-		for(int i = 0; i < m_number; i++){
+		for(unsigned i = 0; i < m_number; i++){
 			unsigned degree = current->m_degree;
 			Node *current_parent = current;
 
@@ -422,14 +444,14 @@ private:
 				current_parent = parent;
 			}
 
-			trees[degree] = current;
+			trees[degree] = current_parent;
 			current = current->m_right;
 		}
 
 		m_number = 0;
 		for(Node *n : trees) {
 			if(n) {
-				if (!m_top || compare(m_top->m_key, n->m_key)) {
+				if (!m_top || compare(m_top->m_key, n->m_key) || m_top->m_parent) {
 					m_top = n;
 				}
 				m_number++;
@@ -478,26 +500,48 @@ private:
 		return cmp(a,b);
 	}
 
+    bool compare(Value &a, Value &b) {
+        Compare cmp = Compare();
+        return cmp(a,b);
+    }
+
 	template <typename T = Value>
-	Node* insert_help(T&& t, std::false_type) {
-		//std::cout << "RVALUE" << std::endl;
-		//T* X = new T(std::move(t));
-		Node *n = new Node(std::move(t));
+	Node* insert_help(T&& t, std::false_type) { //NOLINT
+		auto n = new Node(std::move(t));
 		return n;
 	}
 
 	template <typename T = Value>
-	Node* insert_help(const T& t, std::true_type) {
-		//std::cout << "LVALUE" << std::endl;
-		//T* X = (new T(t));
-		Node *n = new Node(t);
+	Node* insert_help(const T& t, std::true_type) { //NOLINT
+		auto n = new Node(t);
 		return n;
 	}
 
+    void deleteFibHeap(Node* top, Node* current) {
+        if (current->m_child) {
+            deleteFibHeap(current->m_child, current->m_child);
+        }
+        if (current->m_right != top) {
+            deleteFibHeap(top, current->m_right);
+        }
+        if (current == top) {
+            if (current->m_parent)
+                current->m_parent->m_child = nullptr;
+            delete current;
+            return;
+        }
+        top->m_left = current->m_left;
+        current->m_left->m_right = top;
+        delete current;
+    }
+
+    static Compare cmpFunction;
 	Node* m_top;
 	unsigned m_number;
 	size_t m_size;
 };
 
+template <typename Value, typename Compare>
+Compare FibHeap<Value, Compare>::cmpFunction = Compare();
 
 #endif //FIBHEAP_FIBHEAP_HPP
