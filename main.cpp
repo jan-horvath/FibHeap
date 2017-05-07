@@ -1,4 +1,4 @@
-#if 1
+#if 0
 
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
@@ -15,7 +15,10 @@
 #include <algorithm>
 #include <cassert>
 #include <random>
+#include <limits>
 #include "FibHeap.hpp"
+
+const unsigned MY_MAX = 1000000000;
 
 
 struct compareString_copy {
@@ -41,7 +44,6 @@ struct compareString_nocopy {
 };
 
 bool isNotAlpha(int ch) {
-	bool b = !isalpha(ch);
 	return !isalpha(ch);
 }
 
@@ -51,7 +53,7 @@ bool modify(std::string &word) {
 }
 
 
-int readFile(const std::string fileName, std::vector<std::string> &C_W, std::vector<std::string> &N_W) {
+int readFile(const std::string &fileName, std::vector<std::string> &C_W, std::vector<std::string> &N_W) {
 	using namespace std;
 	ifstream file;
 	file.open(fileName);
@@ -70,11 +72,14 @@ int readFile(const std::string fileName, std::vector<std::string> &C_W, std::vec
     return word_count;
 }
 
-void FillNEmptyTest_str(const std::string fileName, int count) {
+void FillNEmptyTest_str(const std::string &fileName, unsigned count) {
     using namespace std;
     vector<string> const_words, non_const_words;
     priority_queue<string, std::vector<string>, compareString_copy> c_pQueue;
     priority_queue<string, std::vector<string>, compareString_nocopy> n_pQueue;
+    FibHeap<string, compareString_copy> c_fibHeap;
+    FibHeap<string, compareString_nocopy> n_fibHeap;
+
 
     chrono::time_point<chrono::steady_clock> start, end;
     std::chrono::duration< double > average(0);
@@ -86,7 +91,7 @@ void FillNEmptyTest_str(const std::string fileName, int count) {
         for (const string &word : const_words) {
             n_pQueue.push(word);
         }
-        for (const string &word : const_words) {
+        while (!n_pQueue.empty()) {
             n_pQueue.pop();
         }
         end = chrono::steady_clock::now();
@@ -99,17 +104,20 @@ void FillNEmptyTest_str(const std::string fileName, int count) {
     cout << "Total time: " << average.count() << " seconds." << endl;
     cout << "Average time: " << average.count()/10 << " seconds." << endl << endl;
 
+    average = std::chrono::duration< double >(0);
+
     for (unsigned i = 0; i < count ; ++i) {
         start = chrono::steady_clock::now();
         for (string &word : non_const_words) {
             c_pQueue.push(word);
         }
-        for (string &word : non_const_words) {
+        while (!c_pQueue.empty()) {
             c_pQueue.pop();
         }
         end = chrono::steady_clock::now();
         average += end - start;
     }
+
 
     cout << "Filling and emptying priority queue " << count << " times." << endl;
     cout << "Function: Sort by word length, then alphabetically (compare function copies strings)." << endl;
@@ -117,13 +125,52 @@ void FillNEmptyTest_str(const std::string fileName, int count) {
     cout << "Total time: " << average.count() << " seconds." << endl;
     cout << "Average time: " << average.count()/10 << " seconds." << endl << endl;
 
+    average = std::chrono::duration< double >(0);
 
+    for (unsigned i = 0; i < count ; ++i) {
+        start = chrono::steady_clock::now();
+        for (const string &word : const_words) {
+            n_fibHeap.insert(word);
+        }
+        while (!n_fibHeap.empty()) {
+            n_fibHeap.extract_top();
+        }
+        end = chrono::steady_clock::now();
+        average += end - start;
+    }
+
+    cout << "Filling and emptying Fibonacci heap " << count << " times." << endl;
+    cout << "Function: Sort by word length, then alphabetically (no copying)." << endl;
+    cout << "Total number of words: " << word_count << endl;
+    cout << "Total time: " << average.count() << " seconds." << endl;
+    cout << "Average time: " << average.count()/10 << " seconds." << endl << endl;
+
+    average = std::chrono::duration< double >(0);
+
+
+    for (unsigned i = 0; i < count ; ++i) {
+        start = chrono::steady_clock::now();
+        for (string &word : non_const_words) {
+            c_fibHeap.insert(word);
+        }
+        while (!c_fibHeap.empty()) {
+            c_fibHeap.extract_top();
+        }
+        end = chrono::steady_clock::now();
+        average += end - start;
+    }
+
+    cout << "Filling and emptying Fibonacci heap " << count << " times." << endl;
+    cout << "Function: Sort by word length, then alphabetically (compare function copies strings)." << endl;
+    cout << "Total number of words: " << word_count << endl;
+    cout << "Total time: " << average.count() << " seconds." << endl;
+    cout << "Average time: " << average.count()/10 << " seconds." << endl << endl;
 }
 
 void FillNEmptyTest_int(unsigned pushCount, unsigned repeatCount) {
     using namespace std;
     priority_queue<int> pQueue;
-    //FibHeap<int> fibHeap;
+    FibHeap<int> fibHeap;
     vector<int> vector;
     chrono::time_point<chrono::steady_clock> start, end;
     std::chrono::duration< double > total;
@@ -145,36 +192,34 @@ void FillNEmptyTest_int(unsigned pushCount, unsigned repeatCount) {
             pQueue.pop();
         }
         end = chrono::steady_clock::now();
-        total = end - start;
+        total += end - start;
     }
     std::cout << "Priority queue" << endl;
     std::cout << "Pushed and popped " << pushCount << " random values " << repeatCount << " times" << endl;
     std::cout << "Total time: " << total.count() << "s   Average time: " << total.count()/repeatCount << "s\n\n";
     total = std::chrono::duration<double>(0);
-/*
+
     for (unsigned j = 0; j < repeatCount; ++j) {
         start = chrono::steady_clock::now();
         for (unsigned i = 0; i < pushCount; ++i) {
-            FibHeap.insert(vector.at(i));
+            fibHeap.insert(vector.at(i));
         }
 
         for (unsigned i = 0; i < pushCount; ++i) {
-            FibHeap.extract_top();
+            fibHeap.extract_top();
         }
         end = chrono::steady_clock::now();
-        total = end - start;
+        total += end - start;
     }
     std::cout << "Fibonacci heap" << endl;
     std::cout << "Pushed and popped " << pushCount << " random values." << endl;
     std::cout << "Total time: " << total.count() << "s   Average time: " << total.count()/repeatCount << "s\n";
-    */
+
 }
 
 void UserTest() {
     using namespace std;
     unsigned count;
-    bool pop;
-    bool exit = false;
     string cmd;
 
     priority_queue<int> pQueue;
@@ -205,16 +250,16 @@ void UserTest() {
                 pQueue.push(vector.at(i));
             }
             end = chrono::steady_clock::now();
-            total_queue = end - start;
+            total_queue += end - start;
 
-            /*
+
             start = chrono::steady_clock::now();
             for (unsigned i = 0; i < count; ++i) {
                 fibHeap.insert(vector.at(i));
             }
             end = chrono::steady_clock::now();
-            total_fib = end - start;
-            */
+            total_fib += end - start;
+
         }
         if (cmd == "pop") {
             cin >> count;
@@ -224,15 +269,15 @@ void UserTest() {
                 pQueue.pop();
             }
             end = chrono::steady_clock::now();
-            total_queue = end - start;
-            /*
+            total_queue += end - start;
+
             start = chrono::steady_clock::now();
             for (unsigned i = 0; i < count; ++i) {
                 fibHeap.extract_top();
             }
             end = chrono::steady_clock::now();
-            total_fib = end - start;
-            */
+            total_fib += end - start;
+
         }
         if (cmd == "exit") {
             cout << "Fibonacci heap\n"
@@ -245,13 +290,202 @@ void UserTest() {
     }
 }
 
+struct Vertex {
+    Vertex(unsigned id) : dist(MY_MAX), ID(id) {}
+    Vertex(unsigned id, unsigned distance) : dist(distance), ID(id) {}
+
+    unsigned dist;
+    unsigned ID;
+};
+
+struct cmpVertex {
+    bool operator() (const Vertex& first, const Vertex& second) {
+        return second.dist == first.dist ? first.ID > second.ID : first.dist > second.dist;
+    }
+};
+
+struct Graph {
+    Graph(size_t s) : matrix(s*s, 0), size(s) {}
+
+    int at(size_t row, size_t col) {
+        return matrix[row*size + col];
+    }
+
+    void generateSparseGraph(int max) {
+        generateGraph(0.33, max);
+    }
+    void generateDenseGraph(int max) {
+        generateGraph(0.66, max);
+    }
+
+    void generateGraph(float fill, int max) {
+        std::random_device rd;
+        std::mt19937 generator;
+        unsigned x = rd();
+        generator.seed(x);
+        std::cout << x << std::endl;
+
+        for (size_t i = 0; i < size; ++i) {
+            for (size_t j = 0; j < i; ++j) {
+                if (generator() % 1000 < fill * 1000) {
+                    matrix.at(i * size + j) = (generator() % max) + 1;
+                    matrix.at(j * size + i) = matrix.at(i * size + j);
+                } else {
+                    matrix.at(i * size + j) = MY_MAX;
+                    matrix.at(j * size + i) = MY_MAX;
+                }
+            }
+        }
+    }
+
+    void shortestPathPriorityQueue(unsigned fromID, bool showResult, bool showTime) {
+        using namespace std;
+        chrono::time_point<chrono::steady_clock> start, end;
+        chrono::duration< double > duration;
+
+
+        std::priority_queue<Vertex, std::vector<Vertex>, cmpVertex> pQueue;
+        std::vector<unsigned> distances(size, MY_MAX);
+        for (unsigned i = 0; i < size; ++i) {
+            pQueue.push(Vertex(i));
+        }
+        pQueue.push(Vertex(fromID, 0));
+        distances[fromID] = 0;
+        assert(pQueue.top().dist == 0);
+
+
+        start = chrono::steady_clock::now();
+        unsigned u;
+
+        while (!pQueue.empty()) {
+            u = pQueue.top().ID;
+            pQueue.pop();
+            for (unsigned v = 0; v < size; ++v) {
+                if (distances[v] > distances[u] + at(u, v)) {
+                    distances[v] = distances[u] + at(u, v);
+                    pQueue.push(Vertex(v, distances[v]));
+                }
+            }
+        }
+
+        end = chrono::steady_clock::now();
+        duration = end - start;
+
+        if (showResult) {
+            std::cout << "Shortest distances from vertex " << fromID << "(priority queue)" << std::endl;
+            for (unsigned i = 0; i < size; ++i) {
+                std::cout << "ID: " << i << "    d = " << distances[i] << std::endl;
+            }
+        }
+
+        if (showTime) {
+            cout << "Shortest path (Priority queue)" << endl;
+            cout << "Graph size: " << size << endl;
+            cout << "Time: " << duration.count() << "s" << endl;
+        }
+    };
+
+    void shortestPathFibHeap(unsigned fromID, bool showResult, bool showTime) {
+        using namespace std;
+        chrono::time_point<chrono::steady_clock> start, end;
+        chrono::duration< double > duration;
+
+
+        FibHeap<Vertex, cmpVertex> fibHeap;
+        std::vector<FibHeap<Vertex, cmpVertex>::Handler> handlers;
+        std::vector<unsigned> distances(size, MY_MAX);
+        for (unsigned i = 0; i <= size; ++i) {
+            handlers.push_back(fibHeap.insert(Vertex(i, MY_MAX)));
+        }
+        fibHeap.increase_key(handlers[fromID], Vertex(fromID, 0));
+        //std::cout << "after init" << std::endl;
+
+        start = chrono::steady_clock::now();
+
+        unsigned ID, distance;
+        while (!fibHeap.empty()) {
+            ID = fibHeap.top().ID;
+            distance = fibHeap.top().dist;
+            distances[ID] = distance;
+            for (unsigned v = 0; v < size; ++v) {
+                if (handlers[v].value().dist > distance + at(ID, v)) {
+                    //std::cout << "ID: " << ID << "    v = " << v << "    handler[v].ID = " << handlers[v].value().ID << std::endl;
+                    fibHeap.increase_key(handlers[v], Vertex(v, distance + at(ID, v)));
+                }
+            }
+            fibHeap.extract_top();
+        }
+
+        end = chrono::steady_clock::now();
+        duration = end - start;
+
+        if (showResult) {
+            std::cout << "Shortest distances from vertex " << fromID << "(Fibonacci heap)" << std::endl;
+            for (unsigned i = 0; i < size; ++i) {
+                std::cout << "ID: " << i << "    d = " << distances[i] << std::endl;
+            }
+            std::cout << "End of results" << std::endl;
+        }
+        if (showTime) {
+            cout << "Shortest path (Fibonacci heap)" << endl;
+            cout << "Graph size: " << size << endl;
+            cout << "Time: " << duration.count() << "s" << endl;
+        }
+    }
+
+
+
+    std::vector<int> matrix;
+    size_t size;
+};
+
+
+
+
+
 int main() {
-    //FillNEmptyTest_str("input.txt", 10);
-    //FillNEmptyTest_int(200000, 10);
+    FillNEmptyTest_str("input.txt", 10);
+    std::cin.ignore();
+    FillNEmptyTest_int(100000, 1);
+    std::cin.ignore();
+
     UserTest();
+
+    std::cin.ignore();
+
+    Graph graph(8);
+    graph.matrix =
+            {0,     MY_MAX, MY_MAX, 3,      MY_MAX, 5,      7,      MY_MAX,
+             MY_MAX,0,      MY_MAX, 3,      8,      4,      MY_MAX, MY_MAX,
+             MY_MAX,MY_MAX, 0,      2,      5,      MY_MAX, MY_MAX, MY_MAX,
+             3,     3,      2,      0,      MY_MAX, MY_MAX, 1,      MY_MAX,
+             MY_MAX,8  ,    5,      MY_MAX, 0,      MY_MAX, 6,      MY_MAX,
+             5,     4,      MY_MAX, MY_MAX, MY_MAX, 0,      MY_MAX, 2,
+             7,     MY_MAX, MY_MAX, 1,      6,      MY_MAX, 0,      4,
+             MY_MAX,MY_MAX, MY_MAX, MY_MAX, MY_MAX, 2,      4,      0};
+
+    graph.shortestPathPriorityQueue(5, true, true);
+    graph.shortestPathFibHeap(5, true, true);
+
+    Graph graph1(200);
+    graph1.generateSparseGraph(50);
+    std::cout << "begin" << std::endl;
+    graph1.shortestPathFibHeap(2,false, true);
+    std::cout << "end" << std::endl;
+    graph1.shortestPathPriorityQueue(15, false, true);
 }
 
 //prepare for comparisons
 //numeric types and strings from file
+
+/**
+ *  1632396061 - stack dump
+ *  3220993285 - (300 vertices)
+ *  1510079812 - loop
+ *  2794981404 (1000 vertices)
+ *  3325710247 (500 vertices)
+ *
+ *  1085989631 - AISA loop
+ */
 
 #endif
