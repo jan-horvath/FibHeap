@@ -11,6 +11,8 @@
 template <typename Value, typename Compare = std::less<Value>>
 class FibHeap {
  public:
+    class Handler;
+
   /**
    * class for definitions of Nodes in the fibonacci heap
    * every node has
@@ -31,6 +33,8 @@ class FibHeap {
     unsigned m_degree;
     Value m_key;
 
+    FibHeap::Handler *m_handler;
+
     Node()
         : m_left(nullptr),
           m_right(nullptr),
@@ -38,7 +42,8 @@ class FibHeap {
           m_child(nullptr),
           m_mark(false),
           m_degree(0),
-          m_key(0){};
+          m_key(0),
+		  m_handler(nullptr){};
     Node(const Value& val)
         : m_left(nullptr),
           m_right(nullptr),
@@ -46,7 +51,8 @@ class FibHeap {
           m_child(nullptr),
           m_mark(false),
           m_degree(0),
-          m_key(std::move(val)){};
+          m_key(std::move(val)),
+		  m_handler(nullptr){};
     Node(Value&& val)
         : m_left(nullptr),
           m_right(nullptr),
@@ -54,7 +60,8 @@ class FibHeap {
           m_child(nullptr),
           m_mark(false),
           m_degree(0),
-          m_key(std::move(val)){};
+          m_key(std::move(val)),
+		  m_handler(nullptr){};
     Node(const Node& n)
         : m_left(nullptr),
           m_right(nullptr),
@@ -62,7 +69,8 @@ class FibHeap {
           m_child(nullptr),
           m_mark(n.m_mark),
           m_degree(n.m_degree),
-          m_key(n.m_key){};
+          m_key(n.m_key),
+		  m_handler(nullptr){};
     Node& operator=(const Node& n) {
       Node tmp(n);
       swap(tmp);
@@ -81,6 +89,7 @@ class FibHeap {
       std::swap(other.m_key, m_key);
       std::swap(other.m_degree, m_degree);
       std::swap(other.m_mark, m_mark);
+		std::swap(other.m_handler, m_handler);
     }
 
     ~Node() = default;
@@ -107,12 +116,14 @@ class FibHeap {
 
    public:
     Handler(Handler&& h) noexcept : m_node(h.m_node), m_exists(h.m_exists) {
+		m_node->m_handler = this;
       h.m_node = nullptr;
       h.m_exists = false;
     }
     Handler& operator=(Handler&& h) noexcept {
       m_node = h.m_node;
       m_exists = h.m_exists;
+		m_node->m_handler = this;
       h.m_node = nullptr;
       h.m_exists = false;
       return *this;
@@ -326,6 +337,10 @@ class FibHeap {
    * this function also calls the consolidate function
    */
   void extract_top() {
+	  if(m_top->m_handler){
+		  m_top->m_handler->m_exists = false;
+	  }
+
     if (size() == 1) {
       delete m_top;
       m_top = nullptr;
