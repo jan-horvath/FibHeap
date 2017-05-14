@@ -210,7 +210,7 @@ void FillNEmptyTest_int(unsigned pushCount, unsigned repeatCount) {
   FibHeap<int> fibHeap;
   vector<int> vector;
   chrono::time_point<chrono::steady_clock> start, end;
-  std::chrono::duration<double> total;
+  std::chrono::duration<double> total(0);
   random_device rd;
   mt19937 generator;
   generator.seed(rd());
@@ -269,7 +269,7 @@ void UserTest() {
   FibHeap<int> fibHeap;
   vector<int> vector;
   chrono::time_point<chrono::steady_clock> start, end;
-  std::chrono::duration<double> total_fib, total_queue;
+  std::chrono::duration<double> total_fib(0), total_queue(0);
   random_device rd;
   mt19937 generator;
   generator.seed(rd());
@@ -399,7 +399,7 @@ struct Graph {
                                  bool showTime) {
     using namespace std;
     chrono::time_point<chrono::steady_clock> start, end;
-    chrono::duration<double> duration;
+    chrono::duration<double> duration(0);
 
     std::priority_queue<Vertex, std::vector<Vertex>, cmpVertex> pQueue;
     std::vector<unsigned> distances(size, MY_MAX);
@@ -445,12 +445,12 @@ struct Graph {
   void shortestPathFibHeap(unsigned fromID, bool showResult, bool showTime) {
     using namespace std;
     chrono::time_point<chrono::steady_clock> start, end;
-    chrono::duration<double> duration;
+    chrono::duration<double> duration(0);
 
     FibHeap<Vertex, cmpVertex> fibHeap;
     std::vector<FibHeap<Vertex, cmpVertex>::Handler> handlers;
     std::vector<unsigned> distances(size, MY_MAX);
-    for (unsigned i = 0; i <= size; ++i) {
+    for (unsigned i = 0; i < size; ++i) {
       handlers.push_back(fibHeap.insert(Vertex(i, MY_MAX)));
     }
     fibHeap.increase_key(handlers[fromID], Vertex(fromID, 0));
@@ -464,9 +464,8 @@ struct Graph {
       distance = fibHeap.top().dist;
       distances[ID] = distance;
       for (unsigned v = 0; v < size; ++v) {
-        if (handlers[v].value().dist > distance + at(ID, v)) {
-          // std::cout << "ID: " << ID << "    v = " << v << "    handler[v].ID
-          // = " << handlers[v].value().ID << std::endl;
+        if (handlers[v].isValid() &&
+            handlers[v].value().dist > distance + at(ID, v)) {
           fibHeap.increase_key(handlers[v], Vertex(v, distance + at(ID, v)));
         }
       }
@@ -500,30 +499,26 @@ int main() {
   // FillNEmptyTest_int(100000, 1);
   // UserTest();
 
-    /*
-    Graph graph(8);
-    graph.matrix = {
-    0,      MY_MAX, MY_MAX, 3,      MY_MAX, 5,      7,      MY_MAX,
-    MY_MAX, 0,      MY_MAX, 3,      8,      4,      MY_MAX, MY_MAX,
-    MY_MAX, MY_MAX, 0,      2,      5,      MY_MAX, MY_MAX, MY_MAX,
-    3,      3,      2,      0,      MY_MAX, MY_MAX, 1,      MY_MAX,
-    MY_MAX, 8,      5,      MY_MAX, 0,      MY_MAX, 6,      MY_MAX,
-    5,      4,      MY_MAX, MY_MAX, MY_MAX, 0,      MY_MAX, 2,
-    7,      MY_MAX, MY_MAX, 1,      6,      MY_MAX, 0,      4,
-    MY_MAX, MY_MAX, MY_MAX, MY_MAX, MY_MAX, 2,      4,      0};
+  /*Graph graph(8);
+  graph.matrix = {
+  0,      MY_MAX, MY_MAX, 3,      MY_MAX, 5,      7,      MY_MAX,
+  MY_MAX, 0,      MY_MAX, 3,      8,      4,      MY_MAX, MY_MAX,
+  MY_MAX, MY_MAX, 0,      2,      5,      MY_MAX, MY_MAX, MY_MAX,
+  3,      3,      2,      0,      MY_MAX, MY_MAX, 1,      MY_MAX,
+  MY_MAX, 8,      5,      MY_MAX, 0,      MY_MAX, 6,      MY_MAX,
+  5,      4,      MY_MAX, MY_MAX, MY_MAX, 0,      MY_MAX, 2,
+  7,      MY_MAX, MY_MAX, 1,      6,      MY_MAX, 0,      4,
+  MY_MAX, MY_MAX, MY_MAX, MY_MAX, MY_MAX, 2,      4,      0};
 
-    graph.shortestPathPriorityQueue(5, true, true);
-    graph.shortestPathFibHeap(5, true, true);
-    */
+  graph.shortestPathPriorityQueue(5, true, true);
+  graph.shortestPathFibHeap(5, true, true);*/
 
-    /*
-    Graph graph1(200);
-    graph1.generateSparseGraph(50);
-    std::cout << "begin" << std::endl;
-    graph1.shortestPathFibHeap(2, false, true);
-    std::cout << "end" << std::endl;
-    graph1.shortestPathPriorityQueue(15, false, true);
-    */
+  /*Graph graph1(20000);
+  graph1.generateSparseGraph(50);
+  std::cout << "begin" << std::endl;
+  graph1.shortestPathFibHeap(2, false, true);
+  std::cout << "end" << std::endl;
+  graph1.shortestPathPriorityQueue(15, false, true);*/
 }
 
 #endif

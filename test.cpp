@@ -683,7 +683,7 @@ TEST_CASE("Work with handlers (decrease key)") {  // NOLINT
   REQUIRE(fibHeap.empty());
 }
 
-TEST_CASE("Memory leak test test") {  // NOLINT
+TEST_CASE("Test") {  // NOLINT
   std::vector<int> vector = {1, 3, 5, 7, 9, 11, 13, -13};
   FibHeap<X, cmpX> testHeap1{10, 20, 30, 40, 50, 45, 35, 25, 15, 5};
   FibHeap<X, cmpX> testHeap3 = testHeap1;
