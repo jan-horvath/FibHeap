@@ -204,6 +204,7 @@ class FibHeap {
   }
 
   ~FibHeap() {
+    extract_top();
     if (m_top)
       deleteFibHeap(m_top, m_top);
   }
@@ -339,6 +340,9 @@ class FibHeap {
    * this function also calls the consolidate function
    */
   void extract_top() {
+    if (!m_top)
+        return;
+
     if (m_top->m_handler) {
       m_top->m_handler->m_exists = false;
     }

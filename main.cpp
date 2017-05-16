@@ -496,7 +496,7 @@ struct Graph {
 
 int main() {
   // FillNEmptyTest_str("input.txt", 10);
-  // FillNEmptyTest_int(100000, 1);
+  FillNEmptyTest_int(1000000, 1);
   // UserTest();
 
   /*Graph graph(8);
