@@ -5,18 +5,18 @@
 
 #else
 
-#include <iostream>
-#include <vector>
-#include <fstream>
-#include <regex>
-#include <cctype>
-#include <chrono>
-#include <queue>
+#include "FibHeap.hpp"
 #include <algorithm>
 #include <cassert>
-#include <random>
+#include <cctype>
+#include <chrono>
+#include <fstream>
+#include <iostream>
 #include <limits>
-#include "FibHeap.hpp"
+#include <queue>
+#include <random>
+#include <regex>
+#include <vector>
 
 const unsigned MY_MAX = 1000000000;
 
@@ -25,7 +25,7 @@ const unsigned MY_MAX = 1000000000;
  * (Makes copies of string)
  */
 struct compareString_copy {
-  bool operator()(const std::string& a, const std::string& b) {
+  bool operator()(const std::string &a, const std::string &b) {
     if (a.size() != b.size())
       return (a.size() < b.size());
     std::string cpyA = a;
@@ -41,7 +41,7 @@ struct compareString_copy {
  * (Does not make any copies)
  */
 struct compareString_nocopy {
-  bool operator()(std::string& a, std::string& b) {
+  bool operator()(std::string &a, std::string &b) {
     if (a.size() != b.size())
       return (a.size() < b.size());
     std::transform(a.begin(), a.end(), a.begin(), ::tolower);
@@ -50,16 +50,14 @@ struct compareString_nocopy {
   }
 };
 
-bool isNotAlpha(int ch) {
-  return !isalpha(ch);
-}
+bool isNotAlpha(int ch) { return !isalpha(ch); }
 
 /**
  * Removes all non-alphabetic characters
  * @param word a string to be modified
  * @return modified string
  */
-bool modify(std::string& word) {
+bool modify(std::string &word) {
   word.erase(std::remove_if(word.begin(), word.end(), isNotAlpha), word.end());
   return !word.empty();
 }
@@ -71,9 +69,8 @@ bool modify(std::string& word) {
  * @param N_W vector to be filled
  * @return number of words read
  */
-int readFile(const std::string& fileName,
-             std::vector<std::string>& C_W,
-             std::vector<std::string>& N_W) {
+int readFile(const std::string &fileName, std::vector<std::string> &C_W,
+             std::vector<std::string> &N_W) {
   using namespace std;
   ifstream file;
   file.open(fileName);
@@ -97,7 +94,7 @@ int readFile(const std::string& fileName,
  * @param fileName
  * @param count How many times should the fill & empty process be repeated
  */
-void FillNEmptyTest_str(const std::string& fileName, unsigned count) {
+void FillNEmptyTest_str(const std::string &fileName, unsigned count) {
   using namespace std;
   vector<string> const_words, non_const_words;
   priority_queue<string, std::vector<string>, compareString_copy> c_pQueue;
@@ -112,7 +109,7 @@ void FillNEmptyTest_str(const std::string& fileName, unsigned count) {
 
   for (unsigned i = 0; i < count; ++i) {
     start = chrono::steady_clock::now();
-    for (const string& word : const_words) {
+    for (const string &word : const_words) {
       n_pQueue.push(word);
     }
     while (!n_pQueue.empty()) {
@@ -127,14 +124,14 @@ void FillNEmptyTest_str(const std::string& fileName, unsigned count) {
        << endl;
   cout << "Total number of words: " << word_count << endl;
   cout << "Total time: " << average.count() << " seconds." << endl;
-  cout << "Average time: " << average.count() / 10 << " seconds." << endl
+  cout << "Average time: " << average.count() / count << " seconds." << endl
        << endl;
 
   average = std::chrono::duration<double>(0);
 
   for (unsigned i = 0; i < count; ++i) {
     start = chrono::steady_clock::now();
-    for (string& word : non_const_words) {
+    for (string &word : non_const_words) {
       c_pQueue.push(word);
     }
     while (!c_pQueue.empty()) {
@@ -150,14 +147,14 @@ void FillNEmptyTest_str(const std::string& fileName, unsigned count) {
        << endl;
   cout << "Total number of words: " << word_count << endl;
   cout << "Total time: " << average.count() << " seconds." << endl;
-  cout << "Average time: " << average.count() / 10 << " seconds." << endl
+  cout << "Average time: " << average.count() / count << " seconds." << endl
        << endl;
 
   average = std::chrono::duration<double>(0);
 
   for (unsigned i = 0; i < count; ++i) {
     start = chrono::steady_clock::now();
-    for (const string& word : const_words) {
+    for (const string &word : const_words) {
       n_fibHeap.insert(word);
     }
     while (!n_fibHeap.empty()) {
@@ -172,14 +169,14 @@ void FillNEmptyTest_str(const std::string& fileName, unsigned count) {
        << endl;
   cout << "Total number of words: " << word_count << endl;
   cout << "Total time: " << average.count() << " seconds." << endl;
-  cout << "Average time: " << average.count() / 10 << " seconds." << endl
+  cout << "Average time: " << average.count() / count << " seconds." << endl
        << endl;
 
   average = std::chrono::duration<double>(0);
 
   for (unsigned i = 0; i < count; ++i) {
     start = chrono::steady_clock::now();
-    for (string& word : non_const_words) {
+    for (string &word : non_const_words) {
       c_fibHeap.insert(word);
     }
     while (!c_fibHeap.empty()) {
@@ -195,7 +192,7 @@ void FillNEmptyTest_str(const std::string& fileName, unsigned count) {
        << endl;
   cout << "Total number of words: " << word_count << endl;
   cout << "Total time: " << average.count() << " seconds." << endl;
-  cout << "Average time: " << average.count() / 10 << " seconds." << endl
+  cout << "Average time: " << average.count() / count << " seconds." << endl
        << endl;
 }
 
@@ -225,9 +222,9 @@ void FillNEmptyTest_int(unsigned pushCount, unsigned repeatCount) {
       pQueue.push(vector.at(i));
     }
 
-    for (unsigned i = 0; i < pushCount; ++i) {
+    /*for (unsigned i = 0; i < pushCount; ++i) {
       pQueue.pop();
-    }
+    }*/
     end = chrono::steady_clock::now();
     total += end - start;
   }
@@ -244,9 +241,9 @@ void FillNEmptyTest_int(unsigned pushCount, unsigned repeatCount) {
       fibHeap.insert(vector.at(i));
     }
 
-    for (unsigned i = 0; i < pushCount; ++i) {
+    /*for (unsigned i = 0; i < pushCount; ++i) {
       fibHeap.extract_top();
-    }
+    }*/
     end = chrono::steady_clock::now();
     total += end - start;
   }
@@ -349,7 +346,7 @@ struct Vertex {
  * Structure for Vertex comparison
  */
 struct cmpVertex {
-  bool operator()(const Vertex& first, const Vertex& second) {
+  bool operator()(const Vertex &first, const Vertex &second) {
     return second.dist == first.dist ? first.ID > second.ID
                                      : first.dist > second.dist;
   }
@@ -394,8 +391,7 @@ struct Graph {
     }
   }
 
-  void shortestPathPriorityQueue(unsigned fromID,
-                                 bool showResult,
+  void shortestPathPriorityQueue(unsigned fromID, bool showResult,
                                  bool showTime) {
     using namespace std;
     chrono::time_point<chrono::steady_clock> start, end;
@@ -495,23 +491,23 @@ struct Graph {
 };
 
 int main() {
-  // FillNEmptyTest_str("input.txt", 10);
-  FillNEmptyTest_int(1000000, 1);
+  // FillNEmptyTest_str("input.txt", 1);
+  // FillNEmptyTest_int(1000000, 1);
   // UserTest();
 
-  /*Graph graph(8);
+  Graph graph(8);
   graph.matrix = {
-  0,      MY_MAX, MY_MAX, 3,      MY_MAX, 5,      7,      MY_MAX,
-  MY_MAX, 0,      MY_MAX, 3,      8,      4,      MY_MAX, MY_MAX,
-  MY_MAX, MY_MAX, 0,      2,      5,      MY_MAX, MY_MAX, MY_MAX,
-  3,      3,      2,      0,      MY_MAX, MY_MAX, 1,      MY_MAX,
-  MY_MAX, 8,      5,      MY_MAX, 0,      MY_MAX, 6,      MY_MAX,
-  5,      4,      MY_MAX, MY_MAX, MY_MAX, 0,      MY_MAX, 2,
-  7,      MY_MAX, MY_MAX, 1,      6,      MY_MAX, 0,      4,
-  MY_MAX, MY_MAX, MY_MAX, MY_MAX, MY_MAX, 2,      4,      0};
+      0,      MY_MAX, MY_MAX, 3,      MY_MAX, 5,      7,      MY_MAX,
+      MY_MAX, 0,      MY_MAX, 3,      8,      4,      MY_MAX, MY_MAX,
+      MY_MAX, MY_MAX, 0,      2,      5,      MY_MAX, MY_MAX, MY_MAX,
+      3,      3,      2,      0,      MY_MAX, MY_MAX, 1,      MY_MAX,
+      MY_MAX, 8,      5,      MY_MAX, 0,      MY_MAX, 6,      MY_MAX,
+      5,      4,      MY_MAX, MY_MAX, MY_MAX, 0,      MY_MAX, 2,
+      7,      MY_MAX, MY_MAX, 1,      6,      MY_MAX, 0,      4,
+      MY_MAX, MY_MAX, MY_MAX, MY_MAX, MY_MAX, 2,      4,      0};
 
   graph.shortestPathPriorityQueue(5, true, true);
-  graph.shortestPathFibHeap(5, true, true);*/
+  graph.shortestPathFibHeap(5, true, true);
 
   /*Graph graph1(20000);
   graph1.generateSparseGraph(50);

@@ -2,15 +2,14 @@
 #define FIBHEAP_FIBHEAP_HPP
 
 #include <algorithm>
+#include <cmath>
 #include <cstdio>
 #include <functional>
-#include <cmath>
 /**
  * default function for compare makes maximal Fibonacci Heap
  */
-template <typename Value, typename Compare = std::less<Value>>
-class FibHeap {
- public:
+template <typename Value, typename Compare = std::less<Value>> class FibHeap {
+public:
   class Handler;
 
   /**
@@ -24,54 +23,34 @@ class FibHeap {
    * 		m_key - value hold in the Node
    */
   class Node {
-    Node* m_left;
-    Node* m_right;
-    Node* m_parent;
-    Node* m_child;
+    Node *m_left;
+    Node *m_right;
+    Node *m_parent;
+    Node *m_child;
 
     bool m_mark;
     unsigned m_degree;
     Value m_key;
 
-    FibHeap::Handler* m_handler;
+    FibHeap::Handler *m_handler;
 
     Node()
-        : m_left(nullptr),
-          m_right(nullptr),
-          m_parent(nullptr),
-          m_child(nullptr),
-          m_mark(false),
-          m_degree(0),
-          m_key(0),
+        : m_left(nullptr), m_right(nullptr), m_parent(nullptr),
+          m_child(nullptr), m_mark(false), m_degree(0), m_key(0),
           m_handler(nullptr){};
-    Node(const Value& val)
-        : m_left(nullptr),
-          m_right(nullptr),
-          m_parent(nullptr),
-          m_child(nullptr),
-          m_mark(false),
-          m_degree(0),
-          m_key(std::move(val)),
+    Node(const Value &val)
+        : m_left(nullptr), m_right(nullptr), m_parent(nullptr),
+          m_child(nullptr), m_mark(false), m_degree(0), m_key(std::move(val)),
           m_handler(nullptr){};
-    Node(Value&& val)
-        : m_left(nullptr),
-          m_right(nullptr),
-          m_parent(nullptr),
-          m_child(nullptr),
-          m_mark(false),
-          m_degree(0),
-          m_key(std::move(val)),
+    Node(Value &&val)
+        : m_left(nullptr), m_right(nullptr), m_parent(nullptr),
+          m_child(nullptr), m_mark(false), m_degree(0), m_key(std::move(val)),
           m_handler(nullptr){};
-    Node(const Node& n)
-        : m_left(nullptr),
-          m_right(nullptr),
-          m_parent(nullptr),
-          m_child(nullptr),
-          m_mark(n.m_mark),
-          m_degree(n.m_degree),
-          m_key(n.m_key),
-          m_handler(nullptr){};
-    Node& operator=(const Node& n) {
+    Node(const Node &n)
+        : m_left(nullptr), m_right(nullptr), m_parent(nullptr),
+          m_child(nullptr), m_mark(n.m_mark), m_degree(n.m_degree),
+          m_key(n.m_key), m_handler(nullptr){};
+    Node &operator=(const Node &n) {
       Node tmp(n);
       swap(tmp);
       return *this;
@@ -81,7 +60,7 @@ class FibHeap {
      * swaps two Nodes
      * @param other Node to swap with
      */
-    void swap(Node& other) {
+    void swap(Node &other) {
       std::swap(other.m_left, m_left);
       std::swap(other.m_right, m_right);
       std::swap(other.m_parent, m_parent);
@@ -105,22 +84,22 @@ class FibHeap {
    * 		m_exists - indicates if stored Node exists
    */
   class Handler {
-    Node* m_node;
+    Node *m_node;
     bool m_exists;
 
     Handler() = delete;
-    Handler(const Handler&) = delete;
-    Handler& operator=(const Handler&) = delete;
+    Handler(const Handler &) = delete;
+    Handler &operator=(const Handler &) = delete;
 
-    Handler(Node* node) : m_node(node), m_exists(true) {}
+    Handler(Node *node) : m_node(node), m_exists(true) {}
 
-   public:
-    Handler(Handler&& h) noexcept : m_node(h.m_node), m_exists(h.m_exists) {
+  public:
+    Handler(Handler &&h) noexcept : m_node(h.m_node), m_exists(h.m_exists) {
       m_node->m_handler = this;
       h.m_node = nullptr;
       h.m_exists = false;
     }
-    Handler& operator=(Handler&& h) noexcept {
+    Handler &operator=(Handler &&h) noexcept {
       m_node = h.m_node;
       m_exists = h.m_exists;
       m_node->m_handler = this;
@@ -135,7 +114,7 @@ class FibHeap {
      *
      * @return value of the stored Node
      */
-    const Value& value() const { return m_node->m_key; }
+    const Value &value() const { return m_node->m_key; }
 
     ~Handler() = default;
 
@@ -153,7 +132,7 @@ class FibHeap {
    * @param other heap to copy from
    * @return copied heap
    */
-  FibHeap(const FibHeap& other) : m_top(nullptr) {
+  FibHeap(const FibHeap &other) : m_top(nullptr) {
     if (other.m_top) {
       m_top = new Node(other.top());
       copyRec(*other.m_top, *m_top, other.m_top, m_top);
@@ -168,7 +147,7 @@ class FibHeap {
    * @param other heap to move from
    * @return moved heap
    */
-  FibHeap(FibHeap&& other) noexcept : m_top(nullptr), m_number(0), m_size(0) {
+  FibHeap(FibHeap &&other) noexcept : m_top(nullptr), m_number(0), m_size(0) {
     *this = std::move(other);
   }
 
@@ -177,7 +156,7 @@ class FibHeap {
    * @param other heap to copy assign from
    * @return copy assigned heap
    */
-  FibHeap& operator=(const FibHeap& other) {
+  FibHeap &operator=(const FibHeap &other) {
     FibHeap tmp(other);
     swap(tmp);
     return *this;
@@ -188,7 +167,7 @@ class FibHeap {
    * @param other heap to move assign from
    * @return move assigned heap
    */
-  FibHeap& operator=(FibHeap&& other) noexcept {
+  FibHeap &operator=(FibHeap &&other) noexcept {
     if (m_top)
       deleteFibHeap(m_top, m_top);
 
@@ -238,7 +217,7 @@ class FibHeap {
    * may throw exceptions
    * @return value of the top Node
    */
-  const Value& top() const {
+  const Value &top() const {
     if (!m_top)
       throw std::runtime_error("Dereferencing nullptr(top)!");
     return m_top->m_key;
@@ -263,9 +242,8 @@ class FibHeap {
    * @param val value to insert
    * @return Handler to inserted Node
    */
-  template <typename T = Value>
-  Handler insert(T&& val) {
-    Node* n = insert_help(std::forward<T>(val), std::is_lvalue_reference<T>());
+  template <typename T = Value> Handler insert(T &&val) {
+    Node *n = insert_help(std::forward<T>(val), std::is_lvalue_reference<T>());
 
     if (empty()) {
       m_top = n;
@@ -296,7 +274,7 @@ class FibHeap {
    * heap)
    * @param other heap to unite current with
    */
-  void uniteWith(FibHeap& other) {
+  void uniteWith(FibHeap &other) {
     if (other.empty() || this->m_top == other.m_top) {
       return;
     }
@@ -313,8 +291,8 @@ class FibHeap {
       return;
     }
 
-    Node* left = m_top->m_left;
-    Node* otherRight = other.m_top->m_right;
+    Node *left = m_top->m_left;
+    Node *otherRight = other.m_top->m_right;
 
     left->m_right = otherRight;
     otherRight->m_left = left;
@@ -341,7 +319,7 @@ class FibHeap {
    */
   void extract_top() {
     if (!m_top)
-        return;
+      return;
 
     if (m_top->m_handler) {
       m_top->m_handler->m_exists = false;
@@ -355,9 +333,9 @@ class FibHeap {
       return;
     }
 
-    Node* left = m_top->m_left;
-    Node* right = m_top->m_right;
-    Node* child = m_top->m_child;
+    Node *left = m_top->m_left;
+    Node *right = m_top->m_right;
+    Node *child = m_top->m_child;
 
     if (child) {
       if (left != m_top) {
@@ -401,13 +379,13 @@ class FibHeap {
    * may throw exceptions
    * @param h Handler to Node to delete
    */
-  void delete_value(Handler& h) {
+  void delete_value(Handler &h) {
     if (!h.m_exists || !h.m_node)
       throw std::invalid_argument(
           "Handler does not exist or does not have a pointer to a Node!");
 
-    Node* node = h.m_node;
-    Node* parent = node->m_parent;
+    Node *node = h.m_node;
+    Node *parent = node->m_parent;
 
     if (parent) {
       cutBranch(h.m_node, parent);
@@ -430,17 +408,17 @@ class FibHeap {
    * @param h Handler to Node to change key
    * @param new_value value to change Node's value to
    */
-  void increase_key(const Handler& h, const Value& new_value) {
+  void increase_key(const Handler &h, const Value &new_value) {
     if (!h.m_exists || !h.m_node)
       throw std::invalid_argument(
           "Handler does not exist or does not have a pointer to a Node!");
 
-    Value* curr_value = &h.m_node->m_key;
+    Value *curr_value = &h.m_node->m_key;
     if (!compare(*curr_value, new_value))
       throw std::invalid_argument("Wrong new value in increase_key!");
 
     *curr_value = new_value;
-    Node* parent = h.m_node->m_parent;
+    Node *parent = h.m_node->m_parent;
 
     if (parent && !compare(*curr_value, parent->m_key)) {
       cutBranch(h.m_node, parent);
@@ -456,22 +434,22 @@ class FibHeap {
    * swaps two different Fibonacci heaps
    * @param heap heap to swap with
    */
-  void swap(FibHeap& heap) {
+  void swap(FibHeap &heap) {
     std::swap(m_top, heap.m_top);
     std::swap(m_number, heap.m_number);
     std::swap(m_size, heap.m_size);
   }
 
- private:
+private:
   /**
    * cuts the current branch and puts it in the list of tops
    * @param current Node to cut
    * @param parent parent of the @current Node
    */
-  void cutBranch(Node* current, Node* parent) {
+  void cutBranch(Node *current, Node *parent) {
     /*if(!parent)
             return;*/
-    Node* child = parent->m_child;
+    Node *child = parent->m_child;
     bool checkChild = false;
     if (current == child)
       checkChild = true;
@@ -505,8 +483,8 @@ class FibHeap {
    * cuts branches until heap satisfy the requirements of Fibonacci heap
    * @param node Node to cut from
    */
-  void cascadingCutBranch(Node* node) {
-    Node* parent = node->m_parent;
+  void cascadingCutBranch(Node *node) {
+    Node *parent = node->m_parent;
 
     if (!parent)
       return;
@@ -540,19 +518,19 @@ class FibHeap {
    * ensures the amortized logatimic deletion and extract-top time
    */
   void consolidate() {
-    std::vector<Node*> trees(maxDegree(), nullptr);
-    Node* current = m_top;
+    std::vector<Node *> trees(maxDegree(), nullptr);
+    Node *current = m_top;
 
     for (unsigned i = 0; i < m_number; i++) {
       unsigned degree = current->m_degree;
-      Node* current_parent = current;
+      Node *current_parent = current;
 
       while ((trees[degree] != nullptr)) {
-        Node* son = trees[degree];
-        Node* parent = current_parent;
+        Node *son = trees[degree];
+        Node *parent = current_parent;
 
         if (compare(parent->m_key, son->m_key)) {
-          Node* tmp = son;
+          Node *tmp = son;
           son = parent;
           parent = tmp;
         }
@@ -587,7 +565,7 @@ class FibHeap {
     }
 
     m_number = 0;
-    for (Node* n : trees) {
+    for (Node *n : trees) {
       if (n) {
         if (!m_top || compare(m_top->m_key, n->m_key) || m_top->m_parent) {
           m_top = n;
@@ -605,10 +583,8 @@ class FibHeap {
    * @param initial node (start) from linked list of nodes from original heap
    * @param copyInitial node (start) from linked list of nodes from new heap
    */
-  void copyRec(const Node& from,
-               Node& to,
-               const Node* initial,
-               Node* copyInitial) {
+  void copyRec(const Node &from, Node &to, const Node *initial,
+               Node *copyInitial) {
     to.m_key = from.m_key;
 
     if (from.m_child) {
@@ -641,19 +617,18 @@ class FibHeap {
    * @param b second value
    * @return true/false according to Compare function
    */
-  bool compare(const Value& a, const Value& b) const {
+  bool compare(const Value &a, const Value &b) const {
     return cmpFunction(a, b);
   }
 
-  bool compare(Value& a, Value& b) { return cmpFunction(a, b); }
+  bool compare(Value &a, Value &b) { return cmpFunction(a, b); }
 
   /**
    * implementation of insert for rvalue values
    * @param t value to insert
    * @return created Node from the value @t
    */
-  template <typename T = Value>
-  Node* insert_help(T&& t, std::false_type) {
+  template <typename T = Value> Node *insert_help(T &&t, std::false_type) {
     auto n = new Node(std::move(t));
     return n;
   }
@@ -663,13 +638,12 @@ class FibHeap {
    * @param t value to insert
    * @return created Node from the value @t
    */
-  template <typename T = Value>
-  Node* insert_help(const T& t, std::true_type) {
+  template <typename T = Value> Node *insert_help(const T &t, std::true_type) {
     auto n = new Node(t);
     return n;
   }
 
-  void deleteFibHeap(Node* top, Node* current) {
+  void deleteFibHeap(Node *top, Node *current) {
     if (current->m_child) {
       deleteFibHeap(current->m_child, current->m_child);
     }
@@ -688,7 +662,7 @@ class FibHeap {
   }
 
   static Compare cmpFunction;
-  Node* m_top;
+  Node *m_top;
   unsigned m_number;
   size_t m_size;
 };
@@ -696,4 +670,4 @@ class FibHeap {
 template <typename Value, typename Compare>
 Compare FibHeap<Value, Compare>::cmpFunction = Compare();
 
-#endif  // FIBHEAP_FIBHEAP_HPP
+#endif // FIBHEAP_FIBHEAP_HPP

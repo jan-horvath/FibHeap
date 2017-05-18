@@ -1,5 +1,5 @@
-#include "catch.hpp"
 #include "FibHeap.hpp"
+#include "catch.hpp"
 #include <iostream>
 
 #define CATCH_CONFIG_MAIN
@@ -7,49 +7,49 @@
 struct Copyable {
   Copyable() : value(0) {}
   Copyable(int v) : value(v) {}
-  Copyable(const Copyable& o) : value(o.value) {}
-  Copyable& operator=(const Copyable& o) {
+  Copyable(const Copyable &o) : value(o.value) {}
+  Copyable &operator=(const Copyable &o) {
     value = o.value;
     return *this;
   }
-  Copyable(Copyable&&) = delete;
-  Copyable& operator=(Copyable&&) = delete;
+  Copyable(Copyable &&) = delete;
+  Copyable &operator=(Copyable &&) = delete;
 
-  bool operator>(const Copyable& o) const { return this->value > o.value; }
-  bool operator<(const Copyable& o) const { return this->value < o.value; }
-  bool operator>=(const Copyable& o) const { return this->value >= o.value; }
-  bool operator<=(const Copyable& o) const { return this->value <= o.value; }
-  bool operator==(const Copyable& o) const { return value == o.value; }
-  bool operator!=(const Copyable& o) const { return !((*this) == o); }
+  bool operator>(const Copyable &o) const { return this->value > o.value; }
+  bool operator<(const Copyable &o) const { return this->value < o.value; }
+  bool operator>=(const Copyable &o) const { return this->value >= o.value; }
+  bool operator<=(const Copyable &o) const { return this->value <= o.value; }
+  bool operator==(const Copyable &o) const { return value == o.value; }
+  bool operator!=(const Copyable &o) const { return !((*this) == o); }
 
   int getValue() const { return value; }
 
- private:
+private:
   int value;
 };
 
 struct Movable {
   Movable() : value(0) {}
   Movable(int v) : value(v) {}
-  Movable(Movable&& o) noexcept : value(o.value) { o.value = 0; }
-  Movable& operator=(Movable&& o) noexcept {
+  Movable(Movable &&o) noexcept : value(o.value) { o.value = 0; }
+  Movable &operator=(Movable &&o) noexcept {
     value = o.value;
     o.value = 0;
     return *this;
   }
-  Movable(const Movable&) = delete;
-  Movable& operator=(const Movable&) = delete;
+  Movable(const Movable &) = delete;
+  Movable &operator=(const Movable &) = delete;
 
-  bool operator>(const Movable& o) const { return value > o.value; }
-  bool operator<(const Movable& o) const { return value < o.value; }
-  bool operator>=(const Movable& o) const { return value >= o.value; }
-  bool operator<=(const Movable& o) const { return value <= o.value; }
-  bool operator==(const Movable& o) const { return value == o.value; }
-  bool operator!=(const Movable& o) const { return !((*this) == o); }
+  bool operator>(const Movable &o) const { return value > o.value; }
+  bool operator<(const Movable &o) const { return value < o.value; }
+  bool operator>=(const Movable &o) const { return value >= o.value; }
+  bool operator<=(const Movable &o) const { return value <= o.value; }
+  bool operator==(const Movable &o) const { return value == o.value; }
+  bool operator!=(const Movable &o) const { return !((*this) == o); }
 
   int getValue() const { return value; }
 
- private:
+private:
   int value;
 };
 
@@ -57,43 +57,43 @@ struct X {
   static std::vector<std::uintptr_t> addresses;
 
   X() : value(0) {
-    X::addresses.push_back(reinterpret_cast<std::uintptr_t>(this));  // NOLINT
+    X::addresses.push_back(reinterpret_cast<std::uintptr_t>(this)); // NOLINT
     // std::cout << "X constructed with value " << value << "\n";
   }
 
-  X(const X& other) : value(other.value) {
-    X::addresses.push_back(reinterpret_cast<std::uintptr_t>(this));  // NOLINT
+  X(const X &other) : value(other.value) {
+    X::addresses.push_back(reinterpret_cast<std::uintptr_t>(this)); // NOLINT
     // std::cout << "X copy constructed with value " << value << "\n";
   }
-  X(X&& other) noexcept : value(other.value) {
-    X::addresses.push_back(reinterpret_cast<std::uintptr_t>(this));  // NOLINT
+  X(X &&other) noexcept : value(other.value) {
+    X::addresses.push_back(reinterpret_cast<std::uintptr_t>(this)); // NOLINT
     // std::cout << "X move constructed with value " << value << "\n";
   }
 
-  X& operator=(const X& other) {
+  X &operator=(const X &other) {
     this->value = other.value;
     return *this;
   }
 
   X(int i) : value(i) {
-    X::addresses.push_back(reinterpret_cast<std::uintptr_t>(this));  // NOLINT
+    X::addresses.push_back(reinterpret_cast<std::uintptr_t>(this)); // NOLINT
     // std::cout << "X constructed with value " << value << "\n";
   }
   ~X() {
     // std::cout << "X destroyed with value " << value << "\n";
     REQUIRE(std::find(addresses.begin(), addresses.end(),
                       reinterpret_cast<std::uintptr_t>(this)) !=
-            addresses.end());  // NOLINT
+            addresses.end()); // NOLINT
     addresses.erase(std::remove(addresses.begin(), addresses.end(),
                                 reinterpret_cast<std::uintptr_t>(this)),
-                    addresses.end());  // NOLINT
+                    addresses.end()); // NOLINT
   }
 
-  bool operator<(const X& other) const { return this->value > other.value; }
-  bool operator>(const X& other) const { return this->value < other.value; }
-  bool operator==(const X& other) const { return this->value == other.value; }
-  bool operator<=(const X& other) const { return this->value <= other.value; }
-  bool operator>=(const X& other) const { return this->value >= other.value; }
+  bool operator<(const X &other) const { return this->value > other.value; }
+  bool operator>(const X &other) const { return this->value < other.value; }
+  bool operator==(const X &other) const { return this->value == other.value; }
+  bool operator<=(const X &other) const { return this->value <= other.value; }
+  bool operator>=(const X &other) const { return this->value >= other.value; }
 
   int value;
 };
@@ -101,16 +101,16 @@ struct X {
 std::vector<std::uintptr_t> X::addresses;
 
 struct cmpX {
-  bool operator()(const X& first, const X& second) const {
+  bool operator()(const X &first, const X &second) const {
     return first < second;
   }
 };
 
 template <typename Value>
-bool CheckHeap(FibHeap<Value>& heap, std::vector<Value>& values) {
-  std::sort(values.begin(), values.end(), std::greater<Value>());  // descending
+bool CheckHeap(FibHeap<Value> &heap, std::vector<Value> &values) {
+  std::sort(values.begin(), values.end(), std::greater<Value>()); // descending
 
-  for (auto& value : values) {
+  for (auto &value : values) {
     if (value != heap.top())
       return false;
     heap.extract_top();
@@ -118,58 +118,58 @@ bool CheckHeap(FibHeap<Value>& heap, std::vector<Value>& values) {
   return heap.empty();
 }
 
-TEST_CASE("Default constructor test") {  // NOLINT
+TEST_CASE("Default constructor test") { // NOLINT
   FibHeap<int> testHeap;
 
   REQUIRE(testHeap.empty());
-  REQUIRE(testHeap.size() == 0);  // NOLINT
+  REQUIRE(testHeap.size() == 0); // NOLINT
 }
 
-TEST_CASE("Copy constructor test, empty heap") {  // NOLINT
+TEST_CASE("Copy constructor test, empty heap") { // NOLINT
   FibHeap<int> emptyHeap;
-  FibHeap<int> copiedHeap(emptyHeap);  // NOLINT
+  FibHeap<int> copiedHeap(emptyHeap); // NOLINT
 
   REQUIRE(copiedHeap.empty());
-  REQUIRE(copiedHeap.size() == 0);  // NOLINT
+  REQUIRE(copiedHeap.size() == 0); // NOLINT
 
   REQUIRE(copiedHeap.empty() == emptyHeap.empty());
   REQUIRE(copiedHeap.size() == emptyHeap.size());
 }
 
-TEST_CASE("Move constructor test, empty heap") {  // NOLINT
+TEST_CASE("Move constructor test, empty heap") { // NOLINT
   FibHeap<int> emptyHeap;
   FibHeap<int> movedHeap(std::move(emptyHeap));
 
   REQUIRE(movedHeap.empty());
-  REQUIRE(movedHeap.size() == 0);  // NOLINT
+  REQUIRE(movedHeap.size() == 0); // NOLINT
 
   REQUIRE(movedHeap.empty() == emptyHeap.empty());
   REQUIRE(movedHeap.size() == emptyHeap.size());
 }
 
-TEST_CASE("Copy assignment, empty heap") {  // NOLINT
+TEST_CASE("Copy assignment, empty heap") { // NOLINT
   FibHeap<int> emptyHeap;
-  FibHeap<int> copiedHeap = emptyHeap;  // NOLINT
+  FibHeap<int> copiedHeap = emptyHeap; // NOLINT
 
   REQUIRE(copiedHeap.empty());
-  REQUIRE(copiedHeap.size() == 0);  // NOLINT
+  REQUIRE(copiedHeap.size() == 0); // NOLINT
 
   REQUIRE(copiedHeap.empty() == emptyHeap.empty());
   REQUIRE(copiedHeap.size() == emptyHeap.size());
 }
 
-TEST_CASE("Move assignment, empty heap") {  // NOLINT
+TEST_CASE("Move assignment, empty heap") { // NOLINT
   FibHeap<int> emptyHeap;
   FibHeap<int> movedHeap = std::move(emptyHeap);
 
   REQUIRE(movedHeap.empty());
-  REQUIRE(movedHeap.size() == 0);  // NOLINT
+  REQUIRE(movedHeap.size() == 0); // NOLINT
 
   REQUIRE(movedHeap.empty() == emptyHeap.empty());
   REQUIRE(movedHeap.size() == emptyHeap.size());
 }
 
-TEST_CASE("Simple insert test") {  // NOLINT
+TEST_CASE("Simple insert test") { // NOLINT
   FibHeap<int> testHeap;
 
   testHeap.insert(5);
@@ -189,7 +189,7 @@ TEST_CASE("Simple insert test") {  // NOLINT
   REQUIRE(testHeap.top() == 10);
 }
 
-TEST_CASE("Simple extract_top test") {  // NOLINT
+TEST_CASE("Simple extract_top test") { // NOLINT
   FibHeap<int> testHeap;
 
   testHeap.insert(13);
@@ -211,16 +211,16 @@ TEST_CASE("Simple extract_top test") {  // NOLINT
 
   testHeap.extract_top();
   REQUIRE(testHeap.empty());
-  REQUIRE(testHeap.size() == 0);  // NOLINT
+  REQUIRE(testHeap.size() == 0); // NOLINT
 }
 
-TEST_CASE("Simple range constructor") {  // NOLINT
+TEST_CASE("Simple range constructor") { // NOLINT
   std::vector<int> emptyVector;
   std::vector<int> nEmptyVector = {1, 3, 5, 7, 9, 11, 13, -13};
 
   FibHeap<int> emptyHeap(emptyVector.begin(), emptyVector.end());
   REQUIRE(emptyHeap.empty());
-  REQUIRE(emptyHeap.size() == 0);  // NOLINT
+  REQUIRE(emptyHeap.size() == 0); // NOLINT
 
   FibHeap<int> nEmptyHeap(nEmptyVector.begin(), nEmptyVector.end());
   REQUIRE(!nEmptyHeap.empty());
@@ -238,7 +238,7 @@ TEST_CASE("Simple range constructor") {  // NOLINT
   REQUIRE(nEmptyHeap.size() == 1);
 }
 
-TEST_CASE("Simple initializer list constructor test") {  // NOLINT
+TEST_CASE("Simple initializer list constructor test") { // NOLINT
   FibHeap<int> testHeap{1, 3, 9, 5, 0, 8};
   REQUIRE(testHeap.top() == 9);
   REQUIRE(testHeap.size() == 6);
@@ -246,7 +246,7 @@ TEST_CASE("Simple initializer list constructor test") {  // NOLINT
   REQUIRE(testHeap.top() == 8);
 }
 
-TEST_CASE("Simple heap union test") {  // NOLINT
+TEST_CASE("Simple heap union test") { // NOLINT
   FibHeap<int> testHeap1{3, 2, 1, 10, 20};
   FibHeap<int> testHeap2{6, 5, 4, 15, 25};
 
@@ -262,7 +262,7 @@ TEST_CASE("Simple heap union test") {  // NOLINT
   REQUIRE(testHeap2.empty());
 }
 
-TEST_CASE("Simple delete value test") {  // NOLINT
+TEST_CASE("Simple delete value test") { // NOLINT
   FibHeap<int> testHeap;
   testHeap.insert(3);
   testHeap.insert(9);
@@ -274,7 +274,7 @@ TEST_CASE("Simple delete value test") {  // NOLINT
   REQUIRE(testHeap.top() == 3);
 }
 
-TEST_CASE("Simple increase key test") {  // NOLINT
+TEST_CASE("Simple increase key test") { // NOLINT
   FibHeap<int> testHeap;
   testHeap.insert(9);
   testHeap.insert(6);
@@ -286,7 +286,7 @@ TEST_CASE("Simple increase key test") {  // NOLINT
   REQUIRE(testHeap.top() == 7);
 }
 
-TEST_CASE("Simple swap test") {  // NOLINT
+TEST_CASE("Simple swap test") { // NOLINT
   FibHeap<int> testHeap1{10, 20, 30};
   FibHeap<int> testHeap2{8, 9, 10, 15, 20, 25};
   testHeap1.swap(testHeap2);
@@ -300,7 +300,7 @@ TEST_CASE("Simple swap test") {  // NOLINT
 // #################################################### EXTENDED TESTS
 // ###################################### //
 
-TEST_CASE("Copy constructor test") {  // NOLINT
+TEST_CASE("Copy constructor test") { // NOLINT
   FibHeap<int> testHeap{0, 5, 10, 15, 20, 35};
   auto H25 = testHeap.insert(25);
   auto H30 = testHeap.insert(30);
@@ -337,7 +337,7 @@ TEST_CASE("Copy constructor test") {  // NOLINT
   }
 }
 
-TEST_CASE("Move constructor test") {  // NOLINT
+TEST_CASE("Move constructor test") { // NOLINT
   FibHeap<int> movedFrom;
   movedFrom.insert(20);
   movedFrom.insert(15);
@@ -379,7 +379,7 @@ TEST_CASE("Move constructor test") {  // NOLINT
   }
 }
 
-TEST_CASE("Copy assignment operator test") {  // NOLINT
+TEST_CASE("Copy assignment operator test") { // NOLINT
   FibHeap<int> testHeap{0, 5, 10, 15, 20, 35};
   auto H25 = testHeap.insert(25);
   auto H30 = testHeap.insert(30);
@@ -418,7 +418,7 @@ TEST_CASE("Copy assignment operator test") {  // NOLINT
   }
 }
 
-TEST_CASE("Move assignment operator test") {  // NOLINT
+TEST_CASE("Move assignment operator test") { // NOLINT
   FibHeap<int> movedFrom;
   movedFrom.insert(20);
   movedFrom.insert(15);
@@ -461,7 +461,7 @@ TEST_CASE("Move assignment operator test") {  // NOLINT
   }
 }
 
-TEST_CASE("Insert test") {  // NOLINT
+TEST_CASE("Insert test") { // NOLINT
   SECTION("Copyable") {
     std::vector<Copyable> copyables, copyables2;
     std::vector<int> vector{50, 20, 25, 10, 30, 5, 35, 15, 45, 40};
@@ -479,12 +479,12 @@ TEST_CASE("Insert test") {  // NOLINT
 
     FibHeap<Copyable> testHeap;
 
-    for (const auto& c : copyables) {
+    for (const auto &c : copyables) {
       testHeap.insert(c);
       REQUIRE(c.getValue() != 0);
     }
 
-    for (auto& value : copyables2) {
+    for (auto &value : copyables2) {
       REQUIRE(value.getValue() == testHeap.top().getValue());
       testHeap.extract_top();
     }
@@ -504,14 +504,14 @@ TEST_CASE("Insert test") {  // NOLINT
 
     FibHeap<Movable> testHeap;
 
-    for (auto& m : movables) {
+    for (auto &m : movables) {
       testHeap.insert(std::move(m));
       REQUIRE(m.getValue() == 0);
     }
   }
 }
 
-TEST_CASE("Heap union test") {  // NOLINT
+TEST_CASE("Heap union test") { // NOLINT
   SECTION("Union - empty heap(s)") {
     FibHeap<int> emptyHeap1;
     FibHeap<int> emptyHeap2;
@@ -593,7 +593,7 @@ TEST_CASE("Heap union test") {  // NOLINT
   }
 }
 
-TEST_CASE("Delete value and increase key test") {  // NOLINT
+TEST_CASE("Delete value and increase key test") { // NOLINT
   FibHeap<int> testHeap{20, 30, 40};
   auto H50 = testHeap.insert(50);
   auto H10 = testHeap.insert(10);
@@ -607,7 +607,7 @@ TEST_CASE("Delete value and increase key test") {  // NOLINT
 
   testHeap.delete_value(H50);
   REQUIRE(testHeap.top() == 40);
-  REQUIRE_THROWS(testHeap.delete_value(H50));  // still reachable 16 bytes
+  REQUIRE_THROWS(testHeap.delete_value(H50)); // still reachable 16 bytes
 
   testHeap.increase_key(H10, 100);
   REQUIRE(testHeap.top() == 100);
@@ -615,7 +615,7 @@ TEST_CASE("Delete value and increase key test") {  // NOLINT
   REQUIRE_THROWS(testHeap.increase_key(H10, 0));
 }
 
-TEST_CASE("Delete value test") {  // NOLINT
+TEST_CASE("Delete value test") { // NOLINT
   FibHeap<int> testHeap{20, 30, 40};
   auto H50 = testHeap.insert(50);
   auto H10 = testHeap.insert(10);
@@ -629,7 +629,7 @@ TEST_CASE("Delete value test") {  // NOLINT
   REQUIRE(CheckHeap(testHeap, vec));
 }
 
-TEST_CASE("Work with handlers (delete value)") {  // NOLINT
+TEST_CASE("Work with handlers (delete value)") { // NOLINT
   std::vector<FibHeap<int, std::greater<int>>::Handler> handlers;
   FibHeap<int, std::greater<int>> fibHeap;
   const size_t HEAP_SIZE = 6;
@@ -656,7 +656,7 @@ TEST_CASE("Work with handlers (delete value)") {  // NOLINT
   REQUIRE(fibHeap.empty());
 }
 
-TEST_CASE("Work with handlers (decrease key)") {  // NOLINT
+TEST_CASE("Work with handlers (decrease key)") { // NOLINT
   std::vector<FibHeap<int, std::greater<int>>::Handler> handlers;
   FibHeap<int, std::greater<int>> fibHeap;
   const int HEAP_SIZE = 10000;
@@ -668,7 +668,7 @@ TEST_CASE("Work with handlers (decrease key)") {  // NOLINT
   REQUIRE(fibHeap.top() == 10);
 
   for (unsigned j = 0; j < 10; ++j) {
-    for (const auto& handler : handlers) {
+    for (const auto &handler : handlers) {
       fibHeap.increase_key(handler, handler.value() - 1);
     }
   }
@@ -683,7 +683,7 @@ TEST_CASE("Work with handlers (decrease key)") {  // NOLINT
   REQUIRE(fibHeap.empty());
 }
 
-TEST_CASE("Test") {  // NOLINT
+TEST_CASE("Test") { // NOLINT
   std::vector<int> vector = {1, 3, 5, 7, 9, 11, 13, -13};
   FibHeap<X, cmpX> testHeap1{10, 20, 30, 40, 50, 45, 35, 25, 15, 5};
   FibHeap<X, cmpX> testHeap3 = testHeap1;
